@@ -7,6 +7,9 @@
     "test:instances": "playwright test tests/api/admin-instances.spec.ts",
     "typecheck": "tsc --noEmit"
   },
+  "dependencies": {
+    "pg": "^8.19.0"
+  },
   "devDependencies": {
     "@playwright/test": "^1.54.2",
     "@types/node": "^22.13.10",
