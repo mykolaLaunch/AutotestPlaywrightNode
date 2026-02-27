@@ -8,7 +8,7 @@ test('GET /admin/instances returns valid instances list', async ({ request }) =>
     process.env.API_BASE_URL ?? 'https://localhost:5199'
   );
 
-  const response = await repository.getAdminInstancesRaw();
+  const response = await repository.getAdminInstances();
 
   const validator = new AdminInstancesValidator();
   await validator.validate(response);

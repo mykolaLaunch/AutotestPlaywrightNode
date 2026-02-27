@@ -1,26 +1,15 @@
-import { APIResponse, expect } from '@playwright/test';
+import { expect, APIResponse } from '@playwright/test';
 import { AdminInstance } from '../models/adminInstances';
 import { BaseResponseValidator } from './BaseResponseValidator';
 
 export class AdminInstancesValidator extends BaseResponseValidator {
   public async validate(response: APIResponse): Promise<void> {
-    console.info('='.repeat(80));
-    console.info('🔎 Validation started: GET /admin/instances');
-
-    const status = response.status();
-    console.info(`➡️ HTTP status received: ${status}`);
-    expect(status, 'GET /admin/instances should return 200').toBe(200);
+    expect(response.status(), 'GET /admin/instances should return 200').toBe(200);
 
     const instances = (await response.json()) as AdminInstance[];
     expect(Array.isArray(instances), 'Response should be an array').toBeTruthy();
 
-    console.info(`📦 Instances found: ${instances.length}`);
-
-    for (const [index, instance] of instances.entries()) {
-      console.info(
-        `• Instance #${index + 1}: id=${instance.id}, tenantId="${instance.tenantId}", connectorId="${instance.connectorId}", displayName="${instance.displayName}", enabled=${instance.enabled}, status="${instance.status}"`
-      );
-
+    for (const instance of instances) {
       expect(typeof instance.id, 'id should be number').toBe('number');
       expect(typeof instance.tenantId, 'tenantId should be string').toBe('string');
       expect(typeof instance.connectorId, 'connectorId should be string').toBe('string');
@@ -48,8 +37,5 @@ export class AdminInstancesValidator extends BaseResponseValidator {
         'entityResolutionCompleted should be number'
       ).toBe('number');
     }
-
-    console.info('✅ Validation completed successfully: all instances match expected schema.');
-    console.info('='.repeat(80));
   }
 }
