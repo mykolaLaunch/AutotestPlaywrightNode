@@ -19,4 +19,21 @@ export class AdminInstancesRepository extends BaseApiRepository {
     const response = await this.getAdminInstancesRaw();
     return this.processSuccessResponse<AdminInstance[]>(response);
   }
+
+  public  async getPreparedJson(): Promise<AdminInstance[]> {
+    const response = await this.getAdminInstancesRaw();
+    const instances = (await response.json()) as AdminInstance[];
+
+    if (!Array.isArray(instances)) {
+      throw new Error('Response should be an array of admin instances');
+    }
+
+    return instances.map((instance) => ({
+      ...instance,
+      id: Number(instance.id),
+      enabled: Boolean(instance.enabled),
+      totalItemsProcessed: Number(instance.totalItemsProcessed),
+      entityResolutionCompleted: Number(instance.entityResolutionCompleted)
+    }));
+  }
 }

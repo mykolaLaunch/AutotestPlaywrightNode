@@ -1,5 +1,6 @@
 import { APIResponse, expect } from '@playwright/test';
 import { AdminInstance } from '../models/adminInstances';
+import { AdminInstancesRepository } from '../repositories/AdminInstancesRepository';
 import { BaseResponseValidator } from './BaseResponseValidator';
 
 export class AdminInstancesValidator extends BaseResponseValidator {
@@ -12,8 +13,7 @@ export class AdminInstancesValidator extends BaseResponseValidator {
     expect(status, 'GET /admin/instances should return 200').toBe(200);
     expect(response.status(), 'GET /admin/instances should return 200').toBe(200);
 
-    const instances = (await response.json()) as AdminInstance[];
-    expect(Array.isArray(instances), 'Response should be an array').toBeTruthy();
+    const instances = await AdminInstancesRepository.getPreparedJson(response);
 
     console.info(`📦 Instances found: ${instances.length}`);
 
@@ -53,6 +53,55 @@ export class AdminInstancesValidator extends BaseResponseValidator {
 
       console.info('✅ Validation completed successfully: all instances match expected schema.');
       console.info('.'.repeat(80));
+    }
+  }
+
+  /**
+   * Проверяет, что среди экземпляров есть нужный connectorId и у него заданное количество обработанных элементов.
+   * Проверки выполняются без expect, но все шаги логируются. При несовпадениях накапливаются ошибки и выбрасывается исключение.
+   */
+  public checkConnectorItems(
+    instances: AdminInstance[],
+    connectorId: string,
+    expectedTotalItemsProcessed: number
+  ): void {
+    const errors: string[] = [];
+
+    console.info(
+      `\u2139\uFE0F Checking connector "${connectorId}" for expected totalItemsProcessed = ${expectedTotalItemsProcessed}`
+    );
+
+    const foundInstance = instances.find((instance) => instance.connectorId === connectorId);
+
+    if (!foundInstance) {
+      const message = `Connector "${connectorId}" not found in response`;
+      console.error(message);
+      console.info(
+        `\u274C Checked connector - ${connectorId}, expected items qty = ${expectedTotalItemsProcessed}, present items - not found`
+      );
+      errors.push(message);
+    } else {
+      console.info(
+        `\u2705 Found connector "${connectorId}" with totalItemsProcessed = ${foundInstance.totalItemsProcessed}`
+      );
+
+      if (foundInstance.totalItemsProcessed !== expectedTotalItemsProcessed) {
+        const message = `Mismatch for connector "${connectorId}": expected ${expectedTotalItemsProcessed}, got ${foundInstance.totalItemsProcessed}`;
+        console.error(message);
+        errors.push(message);
+      } else {
+        console.info(
+          `\u2705 Checked connector - ${connectorId}, expected items qty = ${expectedTotalItemsProcessed}, present items - ${foundInstance.totalItemsProcessed}`
+        );
+      }
+    }
+
+    if (errors.length > 0) {
+      throw new Error(`Connector items validation failed: ${errors.join('; ')}`);
+    } else {
+      console.info(
+          `Connector   ${connectorId} has expected items count.`
+      );
     }
   }
 }
