@@ -1,0 +1,90 @@
+import { AnswerExpectations } from '../../src/testing/validators/AnswerEvaluationValidator';
+
+export interface ExternalCase {
+  id: string;
+  question: string;
+  expectations: AnswerExpectations;
+}
+
+export const externalGeneralKnowledgeCases: ExternalCase[] = [
+  {
+    id: 'TC-EXT-002',
+    question: 'What is the capital of Japan?',
+    expectations: { mustContain: ['Tokyo'] }
+  },
+  {
+    id: 'TC-EXT-003',
+    question: 'Who was the president of France in 2010?',
+    expectations: {
+      mustContain: ['Nicolas Sarkozy'],
+      mustNotContain: ['Emmanuel Macron', 'Francois Hollande']
+    }
+  },
+  {
+    id: 'TC-EXT-005',
+    question: 'What is the speed of light?',
+    expectations: {
+      mustContain: ['299', 'km/s'],
+      mustMatch: [/299,?792/]
+    }
+  },
+  // {
+  //   id: 'TC-EXT-010',
+  //   question: 'What causes earthquakes?',
+  //   expectations: { mustContain: ['tectonic', 'plates'] }
+  // },
+  // {
+  //   id: 'TC-EXT-011',
+  //   question: 'When did World War II end?',
+  //   expectations: {
+  //     mustContain: ['1945'],
+  //     mustNotContain: ['1939']
+  //   }
+  // },
+  // {
+  //   id: 'TC-EXT-012',
+  //   question: 'What is the difference between Java and JavaScript?',
+  //   expectations: {
+  //     mustContain: ['different', 'languages'],
+  //     mustNotContain: ['same language']
+  //   }
+  // },
+  // {
+  //   id: 'TC-EXT-015',
+  //   question: 'What was the population of Germany in 2010?',
+  //   expectations: {
+  //     mustMatch: [/8[01]\s?million/],
+  //     mustContain: ['2010']
+  //   }
+  // },
+  // {
+  //   id: 'TC-EXT-019',
+  //   question: 'What is the boiling point of water?',
+  //   expectations: { mustContain: ['100', 'C'] }
+  // },
+  // {
+  //   id: 'TC-EXT-020',
+  //   question: 'What is 2 + 2?',
+  //   expectations: { mustContain: ['4'] }
+  // },
+  // {
+  //   id: 'TC-EXT-021',
+  //   question: 'Who wrote Hamlet?',
+  //   expectations: { mustContain: ['Shakespeare'] }
+  // },
+  // {
+  //   id: 'TC-EXT-022',
+  //   question: 'What is the tallest building in the world?',
+  //   expectations: { mustContain: ['Burj Khalifa'] }
+  // },
+  // {
+  //   id: 'TC-EXT-023',
+  //   question: 'What is gravity?',
+  //   expectations: { mustContain: ['attraction', 'mass'] }
+  // },
+  // {
+  //   id: 'TC-EXT-025',
+  //   question: 'What is the speed of sound?',
+  //   expectations: { mustContain: ['343', 'm/s'] }
+  // }
+];

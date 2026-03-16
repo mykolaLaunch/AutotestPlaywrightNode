@@ -43,11 +43,52 @@ export interface ChatRetrievalChunk {
 export interface ChatAnswerLog {
   originalQuery: string;
   rewrittenQuery?: string;
+  steps?: Array<{
+    id: string;
+    type: string;
+    searchQuery?: string | null;
+    instruction?: string | null;
+    dependsOn?: string | null;
+    retrieveKind?: string | null;
+    retrieveLimit?: number | null;
+    sources?: string[] | null;
+    dataItemTypes?: string[] | null;
+    time?: string | null;
+    filters?: unknown;
+    entities?: unknown;
+    groupBy?: string | null;
+  }>;
+  stepResults?: Array<{
+    stepId: string;
+    stepType: string;
+    chunkCount?: number | null;
+    dataItemCount?: number | null;
+    textPreview?: string | null;
+    elapsedMs?: number | null;
+    failed?: boolean | null;
+    resolvedSearchQuery?: string | null;
+    dataItems?: Array<{
+      source: string;
+      dataItemType: string;
+      titleOrSubject?: string | null;
+      createdAtUtc?: string | null;
+    }> | null;
+  }>;
   retrieval?: {
     totalChunks?: number;
     totalDataItems?: number;
     chunks?: ChatRetrievalChunk[];
   };
+  timing?: {
+    planMs?: number;
+    searchMs?: number;
+    retrievalTotalMs?: number;
+    llmMs?: number;
+    totalMs?: number;
+  };
+  responseSource?: string;
+  resolvedStrategy?: string;
+  reasoningContext?: string | null;
 }
 
 export interface ChatResponse {

@@ -38,7 +38,7 @@ export abstract class BaseApiRepository {
       typeof response === 'string' ? (JSON.parse(response) as Record<string, unknown>) : response;
 
     if (!objectResponse || typeof objectResponse !== 'object') {
-      throw new Error('Пустой или невалидный ответ API');
+      throw new Error('Empty or invalid API response');
     }
 
     const root = (objectResponse.root as Record<string, unknown> | undefined) ?? objectResponse;
@@ -51,6 +51,11 @@ export abstract class BaseApiRepository {
 
   private async processResponse(responseText: string): Promise<unknown> {
     return JSON.parse(responseText);
+  }
+
+  protected async parseJsonResponse<T>(response: APIResponse): Promise<T> {
+    const responseText = await response.text();
+    return (await this.processResponse(responseText)) as T;
   }
 
   public async processSuccessResponse<T>(response: APIResponse): Promise<T> {

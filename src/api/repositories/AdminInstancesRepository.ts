@@ -20,20 +20,43 @@ export class AdminInstancesRepository extends BaseApiRepository {
     return this.processSuccessResponse<AdminInstance[]>(response);
   }
 
-  public  async getPreparedJson(): Promise<AdminInstance[]> {
+  public async getPreparedJson(): Promise<AdminInstance[]> {
     const response = await this.getAdminInstancesRaw();
-    const instances = (await response.json()) as AdminInstance[];
+    const parsed = await this.parsePreparedFromResponse(response);
+    if (!parsed.instances) {
+      throw new Error(parsed.errors.join(' ') || 'Failed to parse admin instances response');
+    }
+    return parsed.instances;
+  }
 
-    if (!Array.isArray(instances)) {
-      throw new Error('Response should be an array of admin instances');
+  public async parsePreparedFromResponse(
+    response: APIResponse
+  ): Promise<{ instances: AdminInstance[] | null; errors: string[] }> {
+    const errors: string[] = [];
+
+    let instances: AdminInstance[];
+    try {
+      instances = (await this.parseJsonResponse<AdminInstance[]>(response)) as AdminInstance[];
+    } catch (err) {
+      errors.push(
+        `Failed to parse admin instances response JSON: ${err instanceof Error ? err.message : String(err)}`
+      );
+      return { instances: null, errors };
     }
 
-    return instances.map((instance) => ({
+    if (!Array.isArray(instances)) {
+      errors.push('Response should be an array of admin instances');
+      return { instances: null, errors };
+    }
+
+    const prepared = instances.map((instance) => ({
       ...instance,
       id: Number(instance.id),
       enabled: Boolean(instance.enabled),
       totalItemsProcessed: Number(instance.totalItemsProcessed),
       entityResolutionCompleted: Number(instance.entityResolutionCompleted)
     }));
+
+    return { instances: prepared, errors };
   }
 }
