@@ -10,7 +10,7 @@ export class ChatRepository extends BaseApiRepository {
   }
 
   /**
-   * Отправляет запрос в чат и возвращает десериализованный ответ.
+   * Sends a chat request and returns the parsed response model.
    */
   public async sendChat(payload: ChatRequestPayload): Promise<ChatResponse> {
     const response = await this.sendChatRaw(payload);
@@ -22,5 +22,20 @@ export class ChatRepository extends BaseApiRepository {
       headers: this.getResponseTypeHeaders(true),
       data: payload
     });
+  }
+
+  public async parseChatResponse(
+    response: APIResponse
+  ): Promise<{ body: ChatResponse | null; errors: string[] }> {
+    const errors: string[] = [];
+    try {
+      const body = await this.parseJsonResponse<ChatResponse>(response);
+      return { body, errors };
+    } catch (err) {
+      errors.push(
+        `Failed to parse chat response JSON: ${err instanceof Error ? err.message : String(err)}`
+      );
+      return { body: null, errors };
+    }
   }
 }

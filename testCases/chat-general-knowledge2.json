@@ -1,0 +1,36 @@
+[
+  {
+    "id": "TC-EXT-002",
+    "question": "What is the capital of Japan?",
+    "expectations": { "mustContain": ["Tokyo"] }
+  },
+  {
+    "id": "TC-EXT-003",
+    "question": "Who was the president of France in 2010?",
+    "expectations": {
+      "mustContain": ["Nicolas Sarkozy"],
+      "mustNotContain": ["Emmanuel Macron", "Francois Hollande"]
+    }
+  },
+  {
+    "id": "TC-EXT-005",
+    "question": "What is the speed of light?",
+    "expectations": {
+      "mustContain": ["299", "km/s"],
+      "mustMatch": [{ "pattern": "299,?792" }]
+    }
+  },
+  {
+  "id": "TC-EXT-010",
+  "question": "What causes earthquakes?",
+  "expectations": { "mustContain": ["tectonic", "plates"] }
+},
+  {
+    "id": "TC-EXT-011",
+    "question": "When did World War II end?",
+    "expectations": {
+      "mustContain": ["1945"],
+      "mustNotContain": ["1939"]
+    }
+  }
+]

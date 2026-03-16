@@ -1,24 +1,22 @@
-import { APIResponse, expect } from '@playwright/test';
+import { APIResponse } from '@playwright/test';
 import { ChatResponse, ChatCitation, ChatRetrievalChunk } from '../models/chat';
 import { BaseResponseValidator } from './BaseResponseValidator';
+import { ValidationResult } from './ValidationResult';
 
 /**
  * Where to look for matching source/externalId.
- * - 'citations'  — only in body.citations
- * - 'chunks'     — only in body.answerLog.retrieval.chunks
- * - 'both'       — in citations AND chunks (default)
+ * - 'citations': only in body.citations
+ * - 'chunks': only in body.answerLog.retrieval.chunks
+ * - 'both': in citations and chunks (default)
  */
 export type SourceSearchScope = 'citations' | 'chunks' | 'both';
 
 /**
  * Options for validateSourceUsage().
- *
- * @param source        - Required. The source value to look for (e.g. 'gmail', 'slack').
- * @param externalIds   - Optional. One or more externalId values to verify.
- * @param matchAll      - When externalIds is provided:
- *                          false (default) — at least one externalId must be found.
- *                          true            — every externalId in the array must be found.
- * @param scope         - Where to search: 'citations' | 'chunks' | 'both' (default).
+ * @param source Required source value to look for (e.g. 'gmail', 'slack').
+ * @param externalIds Optional externalId values to verify.
+ * @param matchAll If true, every externalId must be found. If false, any one is enough.
+ * @param scope Search scope: citations, chunks, or both.
  */
 export interface SourceValidationOptions {
   source: string;
@@ -28,151 +26,148 @@ export interface SourceValidationOptions {
 }
 
 export class ChatValidator extends BaseResponseValidator {
-  public async validate(response: APIResponse): Promise<void> {
+  public async validate(response: APIResponse): Promise<ValidationResult> {
     console.info('.'.repeat(80));
-    console.info('💬 Validation started: POST /chat');
+    console.info('Validation started: POST /chat');
 
+    const errors: string[] = [];
     const status = response.status();
-    console.info(`➡️ HTTP status received: ${status}`);
-    expect(status, 'POST /chat should return 200').toBe(200);
+    console.info(`HTTP status received: ${status}`);
+    if (status !== 200) {
+      errors.push(`POST /chat should return 200, got ${status}.`);
+    }
 
-    const body = (await response.json()) as ChatResponse;
-    this.validateCoreFields(body);
-    this.logCitations(body.citations ?? []);
-    this.logRetrievalChunks(body.answerLog?.retrieval?.chunks ?? []);
+    let body: ChatResponse | null = null;
+    try {
+      body = (await response.json()) as ChatResponse;
+    } catch (err) {
+      errors.push(
+        `Failed to parse chat response JSON: ${err instanceof Error ? err.message : String(err)}`
+      );
+    }
 
-    console.info('✅ Chat response validation completed successfully.');
+    if (body) {
+      errors.push(...this.validateCoreFields(body));
+      this.logCitations(body.citations ?? []);
+      this.logRetrievalChunks(body.answerLog?.retrieval?.chunks ?? []);
+    }
+
+    this.logErrors('Chat response validation', errors);
     console.info('.'.repeat(80));
+    return { errors };
   }
 
   /**
    * Validates that the response contains items with the specified source,
-   * and optionally checks for specific externalId values.
-   *
-   * @example — check that at least one chunk/citation from 'gmail' was used:
-   *   validator.validateSourceUsage(body, { source: 'gmail' });
-   *
-   * @example — check that gmail chunks with at least one of the given externalIds were used:
-   *   validator.validateSourceUsage(body, {
-   *     source: 'gmail',
-   *     externalIds: ['19c8c0b2f79f6627', 'abc123'],
-   *     scope: 'chunks',
-   *   });
-   *
-   * @example — check that ALL given externalIds are present in citations:
-   *   validator.validateSourceUsage(body, {
-   *     source: 'slack',
-   *     externalIds: ['id-1', 'id-2'],
-   *     matchAll: true,
-   *     scope: 'citations',
-   *   });
+   * and optionally checks specific externalId values.
    */
-  public validateSourceUsage(body: ChatResponse, options: SourceValidationOptions): void {
+  public validateSourceUsage(body: ChatResponse, options: SourceValidationOptions): ValidationResult {
+    const errors: string[] = [];
     const { source, externalIds, matchAll = false, scope = 'both' } = options;
 
     console.info('.'.repeat(80));
-    console.info(`response from APP - ${body.answer}`);
-    console.info(`🔍 validateSourceUsage: source="${source}", scope="${scope}"`);
+    console.info(`Response answer: ${body.answer}`);
+    console.info(`validateSourceUsage: source="${source}", scope="${scope}"`);
     if (externalIds?.length) {
-      console.info(
-          `   externalIds=${JSON.stringify(externalIds)}, matchAll=${matchAll}`
-      );
+      console.info(`externalIds=${JSON.stringify(externalIds)}, matchAll=${matchAll}`);
     }
 
-    // Collect candidate items depending on scope
     const citationItems = scope !== 'chunks' ? this.extractFromCitations(body, source) : [];
-    const chunkItems    = scope !== 'citations' ? this.extractFromChunks(body, source) : [];
-    const allItems      = [...citationItems, ...chunkItems];
+    const chunkItems = scope !== 'citations' ? this.extractFromChunks(body, source) : [];
+    const allItems = [...citationItems, ...chunkItems];
 
-    // 1. At least one item with the requested source must exist
     console.info(
-        `   Found ${citationItems.length} citation(s) and ${chunkItems.length} chunk(s) with source="${source}"`
+      `Found ${citationItems.length} citation(s) and ${chunkItems.length} chunk(s) with source="${source}"`
     );
-    expect(
-        allItems.length,
-        `Expected at least one item with source="${source}" in scope="${scope}", but found none`
-    ).toBeGreaterThan(0);
+    if (allItems.length === 0) {
+      errors.push(`Expected at least one item with source="${source}" in scope="${scope}", but found none`);
+    }
 
-    // 2. If externalIds provided — validate presence
     if (externalIds && externalIds.length > 0) {
       const foundExternalIds = new Set(allItems.map((item) => item.externalId).filter(Boolean));
-      console.info(`   externalIds found in response: ${JSON.stringify([...foundExternalIds])}`);
+      console.info(`externalIds found in response: ${JSON.stringify([...foundExternalIds])}`);
 
       if (matchAll) {
-        // Every requested externalId must be present
         for (const id of externalIds) {
-          expect(
-              foundExternalIds.has(id),
-              `Expected externalId="${id}" to be present in source="${source}" items (scope="${scope}"), but it was not found`
-          ).toBe(true);
+          if (!foundExternalIds.has(id)) {
+            errors.push(
+              `Expected externalId="${id}" in source="${source}" items (scope="${scope}"), but it was not found`
+            );
+          }
         }
-        console.info(`   ✅ All ${externalIds.length} externalId(s) found.`);
+        console.info(`All ${externalIds.length} externalId(s) found.`);
       } else {
-        // At least one requested externalId must be present
         const anyFound = externalIds.some((id) => foundExternalIds.has(id));
-        expect(
-            anyFound,
-            `Expected at least one of externalIds=${JSON.stringify(externalIds)} to be present in source="${source}" items (scope="${scope}"), but none were found`
-        ).toBe(true);
-        console.info(`   ✅ At least one externalId found.`);
+        if (!anyFound) {
+          errors.push(
+            `Expected at least one externalId from ${JSON.stringify(
+              externalIds
+            )} in source="${source}" items (scope="${scope}"), but none were found`
+          );
+        }
+        console.info('At least one externalId found.');
       }
     }
 
-    console.info(`✅ validateSourceUsage passed for source="${source}".`);
+    this.logErrors(`validateSourceUsage for source="${source}"`, errors);
     console.info('.'.repeat(80));
+    return { errors };
   }
 
-  // ---------------------------------------------------------------------------
-  // Private helpers
-  // ---------------------------------------------------------------------------
-
-  private extractFromCitations(
-      body: ChatResponse,
-      source: string
-  ): Array<{ externalId: string | null }> {
+  private extractFromCitations(body: ChatResponse, source: string): Array<{ externalId: string | null }> {
     return (body.citations ?? [])
-        .filter((c) => c.source === source)
-        .map((c) => ({ externalId: c.externalId ?? null }));
+      .filter((c) => c.source === source)
+      .map((c) => ({ externalId: c.externalId ?? null }));
   }
 
-  private extractFromChunks(
-      body: ChatResponse,
-      source: string
-  ): Array<{ externalId: string | null }> {
+  private extractFromChunks(body: ChatResponse, source: string): Array<{ externalId: string | null }> {
     return (body.answerLog?.retrieval?.chunks ?? [])
-        .filter((ch) => ch.dataItem.source === source)
-        .map((ch) => ({ externalId: ch.dataItem.externalId ?? null }));
+      .filter((ch) => ch.dataItem.source === source)
+      .map((ch) => ({ externalId: ch.dataItem.externalId ?? null }));
   }
 
-  private validateCoreFields(body: ChatResponse): void {
-    console.info(`📝 Answer: ${body.answer}`);
-    expect(typeof body.answer, 'answer should be string').toBe('string');
+  private validateCoreFields(body: ChatResponse): string[] {
+    const errors: string[] = [];
+    console.info(`Answer: ${body.answer}`);
+    if (typeof body.answer !== 'string') errors.push('answer should be string');
 
-    console.info(`🧵 SessionId: ${body.sessionId}`);
-    expect(typeof body.sessionId, 'sessionId should be number').toBe('number');
+    console.info(`SessionId: ${body.sessionId}`);
+    if (typeof body.sessionId !== 'number') errors.push('sessionId should be number');
 
     if (body.answerLog) {
       console.info(
-          `🔎 AnswerLog: originalQuery="${body.answerLog.originalQuery}", rewritten="${body.answerLog.rewrittenQuery ?? ''}"`
+        `AnswerLog: originalQuery="${body.answerLog.originalQuery}", rewritten="${body.answerLog.rewrittenQuery ?? ''}"`
       );
     }
+    return errors;
   }
 
   private logCitations(citations: ChatCitation[]): void {
-    console.info(`📚 Citations count: ${citations.length}`);
+    console.info(`Citations count: ${citations.length}`);
     citations.forEach((c, idx) => {
       console.info(
-          `  • [${idx + 1}] source=${c.source}, dataItemType=${c.dataItemType}, graphId=${c.graphId}, title=${c.titleOrSubject}`
+        `- [${idx + 1}] source=${c.source}, dataItemType=${c.dataItemType}, graphId=${c.graphId}, title=${c.titleOrSubject}`
       );
     });
   }
 
   private logRetrievalChunks(chunks: ChatRetrievalChunk[]): void {
-    console.info(`📦 Retrieval chunks: ${chunks.length}`);
+    console.info(`Retrieval chunks: ${chunks.length}`);
     chunks.forEach((chunk, idx) => {
       console.info(
-          `  • [${idx + 1}] chunkId=${chunk.chunkId}, score=${chunk.score}, source=${chunk.dataItem.source}, dataItemType=${chunk.dataItem.dataItemType}`
+        `- [${idx + 1}] chunkId=${chunk.chunkId}, score=${chunk.score}, source=${chunk.dataItem.source}, dataItemType=${chunk.dataItem.dataItemType}`
       );
     });
+  }
+
+  private logErrors(context: string, errors: string[]): void {
+    if (errors.length === 0) {
+      console.info(`${context}: no errors.`);
+      return;
+    }
+    console.error(`${context}: ${errors.length} error(s).`);
+    for (const err of errors) {
+      console.error(`- ${err}`);
+    }
   }
 }
