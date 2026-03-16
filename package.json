@@ -10,6 +10,8 @@
     "report:chat": "node scripts/generate-chat-report.js --logs test-results/chat-logs"
   },
   "dependencies": {
+    "@google-cloud/local-auth": "^3.0.1",
+    "googleapis": "^171.4.0",
     "pg": "^8.19.0"
   },
   "devDependencies": {
