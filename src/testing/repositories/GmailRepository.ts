@@ -15,8 +15,24 @@ export interface GmailMessageDetail {
   subject: string;
 }
 
+export type GmailMessageDateSource = 'header' | 'internalDate' | 'unknown';
+
+export interface GmailMessageDateInfo {
+  id: string;
+  dateHeader?: string;
+  internalDate?: string;
+  dateIso?: string;
+  dateEpochMs?: number;
+  dateSource: GmailMessageDateSource;
+}
+
 export interface GmailMessageDetailsResult {
   details: GmailMessageDetail[];
+  errors: string[];
+}
+
+export interface GmailMessageDateInfoResult {
+  items: GmailMessageDateInfo[];
   errors: string[];
 }
 
@@ -110,6 +126,51 @@ export class GmailRepository {
     }
   }
 
+  public async getMessageDateInfos(
+    userId: string = 'me',
+    messageIds: string[],
+    limit: number = 50
+  ): Promise<GmailMessageDateInfoResult> {
+    const errors: string[] = [];
+    try {
+      const auth = await this.buildAuthClient();
+      const gmail = google.gmail({ version: 'v1', auth });
+
+      const ids = messageIds.slice(0, Math.max(0, limit));
+      const items: GmailMessageDateInfo[] = [];
+
+      for (const id of ids) {
+        const res = await gmail.users.messages.get({
+          userId,
+          id,
+          format: 'metadata',
+          metadataHeaders: ['Date']
+        });
+
+        const headers = res.data.payload?.headers ?? [];
+        const dateHeader = this.getHeaderValue(headers, 'Date');
+        const internalDate = res.data.internalDate ?? undefined;
+        const parsed = this.parseMessageDate(dateHeader, internalDate);
+
+        items.push({
+          id,
+          dateHeader,
+          internalDate,
+          dateIso: parsed.dateIso,
+          dateEpochMs: parsed.dateEpochMs,
+          dateSource: parsed.dateSource
+        });
+      }
+
+      return { items, errors };
+    } catch (err) {
+      errors.push(
+        `Failed to fetch Gmail message dates: ${err instanceof Error ? err.message : String(err)}`
+      );
+      return { items: [], errors };
+    }
+  }
+
   private async buildAuthClient() {
     loadEnvOnce();
     const credentials = this.readJsonFile<Record<string, unknown>>(this.credentialsPath);
@@ -158,22 +219,38 @@ export class GmailRepository {
   }
 
   private formatDate(dateHeader?: string | null, internalDate?: string | null): string {
+    const parsed = this.parseMessageDate(dateHeader, internalDate);
+    if (parsed.dateIso) {
+      return parsed.dateIso.slice(0, 10);
+    }
+    if (dateHeader) {
+      return dateHeader;
+    }
+    return 'unknown date';
+  }
+
+  private parseMessageDate(
+    dateHeader?: string | null,
+    internalDate?: string | null
+  ): { dateIso?: string; dateEpochMs?: number; dateSource: GmailMessageDateSource } {
     if (dateHeader) {
       const parsed = new Date(dateHeader);
       if (!Number.isNaN(parsed.getTime())) {
-        return parsed.toISOString().slice(0, 10);
+        return { dateIso: parsed.toISOString(), dateEpochMs: parsed.getTime(), dateSource: 'header' };
       }
-      return dateHeader;
     }
 
     if (internalDate) {
-      const parsed = new Date(Number(internalDate));
-      if (!Number.isNaN(parsed.getTime())) {
-        return parsed.toISOString().slice(0, 10);
+      const ms = Number(internalDate);
+      if (Number.isFinite(ms)) {
+        const parsed = new Date(ms);
+        if (!Number.isNaN(parsed.getTime())) {
+          return { dateIso: parsed.toISOString(), dateEpochMs: parsed.getTime(), dateSource: 'internalDate' };
+        }
       }
     }
 
-    return 'unknown date';
+    return { dateSource: 'unknown' };
   }
 
   private readJsonFile<T>(filePath: string): T {

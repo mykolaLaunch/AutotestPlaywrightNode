@@ -78,4 +78,26 @@ test.describe('Google Drive tests', () => {
 
     expect(errors, errors.join('\n')).toHaveLength(0);
   });
+
+  // Checks that as updated_utc increases, id does not decrease (adjacent-pair order check on DB sample).
+  test('Drive ingestion order by updated_utc vs id for me', async () => {
+    const rawItemRepository = new RawItemRepository();
+    const validator = new GoogleDriveExternalIdValidator();
+
+    const sampleLimit = 1000;
+    const minSamples = 3;
+
+    const dbRows = await rawItemRepository.getBySourceAndAccountLimited('google-drive', 'me', sampleLimit);
+    console.info(`DB raw_item rows fetched: ${dbRows.length}`);
+
+    const dbOrderResult = validator.validateDbRowsForUpdatedUtcAndId(dbRows);
+    const orderResult = validator.validateUpdatedUtcIdOrder(dbOrderResult.items, minSamples);
+
+    const errors = [
+      ...dbOrderResult.result.errors,
+      ...orderResult.errors
+    ];
+
+    expect(errors, errors.join('\n')).toHaveLength(0);
+  });
 });

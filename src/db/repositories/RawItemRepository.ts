@@ -53,6 +53,29 @@ export class RawItemRepository extends DBTool {
   }
 
   /**
+   * Returns rows from raw.raw_item for a specific source and source_account,
+   * ordered by created_utc descending and limited.
+   */
+  public async getBySourceAndAccountLimited(
+    source: string,
+    sourceAccount: string,
+    limit: number = 1000
+  ): Promise<RawItemRow[]> {
+    const safeSource = source.replace(/'/g, "''");
+    const safeAccount = sourceAccount.replace(/'/g, "''");
+    const safeLimit = Number.isFinite(limit) ? Math.max(0, Math.floor(limit)) : 1000;
+    const sql = `
+      SELECT ri.*
+      FROM raw.raw_item AS ri
+      WHERE source = '${safeSource}'
+        AND source_account = '${safeAccount}'
+      ORDER BY ri.created_utc DESC
+      LIMIT ${safeLimit}
+    `;
+    return this.selectAction<RawItemRow>(sql);
+  }
+
+  /**
    * Returns one row from raw.raw_item by id.
    * Includes explicit number validation to prevent SQL injection.
    */

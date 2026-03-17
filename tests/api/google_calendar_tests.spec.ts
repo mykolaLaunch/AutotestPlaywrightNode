@@ -53,4 +53,30 @@ test.describe('Google Calendar tests', () => {
 
     expect(errors, errors.join('\n')).toHaveLength(0);
   });
+
+  // Checks that as updated_utc increases, id does not decrease (adjacent-pair order check on DB sample).
+  test('Calendar ingestion order by updated_utc vs id for mykola@launchnyc.io', async () => {
+    const rawItemRepository = new RawItemRepository();
+    const validator = new GoogleCalendarExternalIdValidator();
+
+    const sampleLimit = 1000;
+    const minSamples = 5;
+
+    const dbRows = await rawItemRepository.getBySourceAndAccountLimited(
+      'google-calendar',
+      'mykola@launchnyc.io',
+      sampleLimit
+    );
+    console.info(`DB raw_item rows fetched: ${dbRows.length}`);
+
+    const dbOrderResult = validator.validateDbRowsForUpdatedUtcAndId(dbRows);
+    const orderResult = validator.validateUpdatedUtcIdOrder(dbOrderResult.items, minSamples);
+
+    const errors = [
+      ...dbOrderResult.result.errors,
+      ...orderResult.errors
+    ];
+
+    expect(errors, errors.join('\n')).toHaveLength(0);
+  });
 });

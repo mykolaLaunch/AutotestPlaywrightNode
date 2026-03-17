@@ -1,4 +1,4 @@
-import { Client, ClientConfig } from 'pg';
+import { Client, ClientConfig, QueryResultRow } from 'pg';
 import fs from 'fs';
 import path from 'path';
 
@@ -30,7 +30,9 @@ export abstract class DBTool {
   /**
    * Executes a SELECT query and returns all rows.
    */
-  protected async selectAction<T = Record<string, unknown>>(sql: string): Promise<T[]> {
+  protected async selectAction<T extends QueryResultRow = Record<string, unknown>>(
+    sql: string
+  ): Promise<T[]> {
     const client = new Client(this.clientConfig);
     await client.connect();
     try {

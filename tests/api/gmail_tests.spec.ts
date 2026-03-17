@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
-import { GmailRepository } from '../../src/testing/repositories/GmailRepository';
 import { RawItemRepository } from '../../src/db/repositories/RawItemRepository';
+import {GmailRepository} from "../../src/testing/repositories/GmailRepository";
 import { GmailExternalIdValidator } from '../../src/testing/validators/GmailExternalIdValidator';
 
 test.describe('Gmail tests', () => {
@@ -54,6 +54,32 @@ test.describe('Gmail tests', () => {
       ...dbExternalIdResult.result.errors,
       ...coverageResult.errors,
       ...missingDetailsErrors
+    ];
+
+    expect(errors, errors.join('\n')).toHaveLength(0);
+  });
+
+  // Checks that as created_utc increases, id does not decrease (adjacent-pair order check on DB sample).
+  test('Gmail ingestion order by created_utc vs id for mykola@launchnyc.io', async () => {
+    const rawItemRepository = new RawItemRepository();
+    const validator = new GmailExternalIdValidator();
+
+    const sampleLimit = 1000;
+    const minSamples = 5;
+
+    const dbRows = await rawItemRepository.getBySourceAndAccountLimited(
+      'gmail',
+      'mykola@launchnyc.io',
+      sampleLimit
+    );
+    console.info(`DB raw_item rows fetched: ${dbRows.length}`);
+
+    const dbOrderResult = validator.validateDbRowsForCreatedUtcAndId(dbRows);
+    const orderResult = validator.validateCreatedUtcIdOrder(dbOrderResult.items, minSamples);
+
+    const errors = [
+      ...dbOrderResult.result.errors,
+      ...orderResult.errors
     ];
 
     expect(errors, errors.join('\n')).toHaveLength(0);
