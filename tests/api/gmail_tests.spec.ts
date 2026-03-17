@@ -17,15 +17,43 @@ test.describe('Gmail tests', () => {
 
     const rawExternalIds = dbRows.map((row) => (row as { external_id?: unknown }).external_id);
     const dbExternalIdResult = validator.validateDbExternalIds(rawExternalIds);
+    const dbSet = new Set(dbExternalIdResult.externalIds);
     const coverageResult = validator.validateGmailIdsPresentInDb(
       gmailResult.ids,
       dbExternalIdResult.externalIds
     );
 
+    const missingIds = gmailResult.ids.filter((id) => !dbSet.has(id));
+    const missingDetailsErrors: string[] = [];
+
+    if (missingIds.length > 0) {
+      const detailsResult = await gmailRepository.getMessageDetails('me', missingIds, 10);
+      missingDetailsErrors.push(...detailsResult.errors);
+
+      if (detailsResult.details.length > 0) {
+        const lines = detailsResult.details.map((detail) => {
+          const folderLabels = new Set(['INBOX', 'SENT', 'DRAFT', 'TRASH', 'SPAM', 'IMPORTANT', 'STARRED']);
+          const categoryPrefix = 'CATEGORY_';
+
+          const folders = detail.labelNames.filter((label) => folderLabels.has(label));
+          const categories = detail.labelNames.filter((label) => label.startsWith(categoryPrefix));
+
+          const folderText = folders.length > 0 ? folders.join(', ') : '(no folder)';
+          const categoryText = categories.length > 0 ? categories.join(', ') : '(no category)';
+
+          return `- folder=${folderText} | category=${categoryText} | ${detail.date} | ${detail.subject}`;
+        });
+        missingDetailsErrors.push(
+          `Missing Gmail messages (showing up to 10):\n${lines.join('\n')}`
+        );
+      }
+    }
+
     const errors = [
       ...gmailResult.errors,
       ...dbExternalIdResult.result.errors,
-      ...coverageResult.errors
+      ...coverageResult.errors,
+      ...missingDetailsErrors
     ];
 
     expect(errors, errors.join('\n')).toHaveLength(0);

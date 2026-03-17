@@ -1,0 +1,81 @@
+[
+  {
+    "id": "TC-MIX-001",
+    "question": "Mr Smith lives in Prague and prefers healthy Asian food including Korean BBQ. Recommend a couple of Prague-appropriate options and, in one sentence, explain what Korean BBQ is.",
+    "expectedStrategy": "ContextFirst",
+    "expectations": {
+      "mustContain": ["Prague", "Asian", "healthy"],
+      "mustMatch": [
+        {
+          "pattern": "Korean\\s*(BBQ|barbecue|barbeque)",
+          "flags": "i"
+        },
+        {
+          "pattern": "(grill|grilled|grilling|barbecue|barbeque)",
+          "flags": "i"
+        }
+      ],
+      "mustNotContain": ["London", "New York"]
+    }
+  },
+  {
+    "id": "TC-MIX-002",
+    "question": "Mr Smith is in Prague. Which country is Prague in, and suggest a healthy dining approach for his Asian/Korean BBQ preferences.",
+    "expectedStrategy": "ContextFirst",
+    "expectations": {
+      "mustContain": ["Prague", "Czech Republic", "healthy", "Asian"],
+      "mustMatch": [
+        {
+          "pattern": "Korean\\s*(BBQ|barbecue|barbeque)",
+          "flags": "i"
+        }
+      ],
+      "mustNotContain": ["London", "New York"]
+    }
+  },
+  {
+    "id": "TC-MIX-003",
+    "question": "Given Mr Smith may have a chronic condition, what caution would you add to restaurant recommendations in Prague, and what cuisine should you prioritize for him?",
+    "expectedStrategy": "ContextFirst",
+    "expectations": {
+      "mustContain": ["Prague", "healthy", "Asian"],
+      "mustMatch": [
+        {
+          "pattern": "(chronic|health|condition|diet|medical)",
+          "flags": "i"
+        }
+      ],
+      "mustNotContain": ["London", "New York"]
+    }
+  },
+  {
+    "id": "TC-MIX-004",
+    "question": "Mr Smith likes Korean BBQ and healthy food in Prague. Provide two selection criteria you would use for picking a restaurant, and confirm the city is in the Czech Republic.",
+    "expectedStrategy": "ContextFirst",
+    "expectations": {
+      "mustContain": ["Prague", "Czech Republic", "healthy"],
+      "mustMatch": [
+        {
+          "pattern": "Korean\\s*(BBQ|barbecue|barbeque)",
+          "flags": "i"
+        }
+      ],
+      "mustNotContain": ["London", "New York"]
+    }
+  },
+  {
+    "id": "TC-MIX-005",
+    "question": "Plan a simple lunch and dinner suggestion for Mr Smith in Prague that fits Asian food and Korean BBQ while keeping it healthy.",
+    "expectedStrategy": "ContextFirst",
+    "expectations": {
+      "mustContain": ["Prague", "Asian", "healthy"],
+      "mustMatch": [
+        {
+          "pattern": "Korean\\s*(BBQ|barbecue|barbeque)",
+          "flags": "i"
+        }
+      ],
+      "mustNotContain": ["London", "New York"]
+    }
+  }
+]
