@@ -3,7 +3,7 @@ import { GoogleCalendarRepository } from '../../src/testing/repositories/GoogleC
 import { RawItemRepository } from '../../src/db/repositories/RawItemRepository';
 import { GoogleCalendarExternalIdValidator } from '../../src/testing/validators/GoogleCalendarExternalIdValidator';
 
-test.describe('Google Calendar tests', () => {
+test.describe('Google Calendar tests', { tag: ['@google-calendar', '@regression'] }, () => {
   test('Calendar external_id coverage for mykola@launchnyc.io', async () => {
     const calendarRepository = new GoogleCalendarRepository();
     const rawItemRepository = new RawItemRepository();

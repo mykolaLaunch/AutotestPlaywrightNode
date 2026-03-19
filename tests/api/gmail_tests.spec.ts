@@ -3,7 +3,7 @@ import { RawItemRepository } from '../../src/db/repositories/RawItemRepository';
 import {GmailRepository} from "../../src/testing/repositories/GmailRepository";
 import { GmailExternalIdValidator } from '../../src/testing/validators/GmailExternalIdValidator';
 
-test.describe('Gmail tests', () => {
+test.describe('Gmail tests', { tag: ['@gmail', '@regression'] }, () => {
   test('Gmail external_id coverage for mykola@launchnyc.io', async () => {
     const gmailRepository = new GmailRepository();
     const rawItemRepository = new RawItemRepository();

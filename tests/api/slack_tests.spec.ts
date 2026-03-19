@@ -4,7 +4,7 @@ import { SlackRepository } from '../../src/testing/repositories/SlackRepository'
 import { SlackExternalIdValidator } from '../../src/testing/validators/SlackExternalIdValidator';
 import { loadEnvOnce } from '../../src/testing/utils/envLoader';
 
-test.describe('Slack tests', () => {
+test.describe('Slack tests', { tag: ['@slack', '@regression'] }, () => {
   test('Slack external_thread coverage for T08EH9GDV', async () => {
     const slackRepository = new SlackRepository();
     const rawItemRepository = new RawItemRepository();

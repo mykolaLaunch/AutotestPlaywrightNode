@@ -3,7 +3,7 @@ import { GoogleDriveRepository } from '../../src/testing/repositories/GoogleDriv
 import { RawItemRepository } from '../../src/db/repositories/RawItemRepository';
 import { GoogleDriveExternalIdValidator } from '../../src/testing/validators/GoogleDriveExternalIdValidator';
 
-test.describe('Google Drive tests', () => {
+test.describe('Google Drive tests', { tag: ['@google-drive', '@regression'] }, () => {
   test('Drive external_id coverage for me', async () => {
     const driveRepository = new GoogleDriveRepository();
     const rawItemRepository = new RawItemRepository();
