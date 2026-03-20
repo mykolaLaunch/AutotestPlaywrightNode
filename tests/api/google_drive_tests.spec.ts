@@ -1,10 +1,12 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../testLogger';
 import { GoogleDriveRepository } from '../../src/testing/repositories/GoogleDriveRepository';
 import { RawItemRepository } from '../../src/db/repositories/RawItemRepository';
 import { GoogleDriveExternalIdValidator } from '../../src/testing/validators/GoogleDriveExternalIdValidator';
 
 test.describe('Google Drive tests', { tag: ['@google-drive', '@regression'] }, () => {
   test('Drive external_id coverage for me', async () => {
+    console.info('--- Google Drive coverage test start');
+    console.info('Action: fetch Drive file ids and compare to raw_item external_id.');
     const driveRepository = new GoogleDriveRepository();
     const rawItemRepository = new RawItemRepository();
     const validator = new GoogleDriveExternalIdValidator();
@@ -76,11 +78,18 @@ test.describe('Google Drive tests', { tag: ['@google-drive', '@regression'] }, (
       ...missingDetailsErrors
     ];
 
+    if (errors.length > 0) {
+      console.info(`Validation errors: ${errors.length}`);
+      console.info(errors.join('\n'));
+    }
     expect(errors, errors.join('\n')).toHaveLength(0);
+    console.info('--- Google Drive coverage test end');
   });
 
   // Checks that as updated_utc increases, id does not decrease (adjacent-pair order check on DB sample).
   test('Drive ingestion order by updated_utc vs id for me', async () => {
+    console.info('--- Google Drive ingestion order test start');
+    console.info('Action: validate updated_utc increases with id on DB sample.');
     const rawItemRepository = new RawItemRepository();
     const validator = new GoogleDriveExternalIdValidator();
 
@@ -98,6 +107,11 @@ test.describe('Google Drive tests', { tag: ['@google-drive', '@regression'] }, (
       ...orderResult.errors
     ];
 
+    if (errors.length > 0) {
+      console.info(`Validation errors: ${errors.length}`);
+      console.info(errors.join('\n'));
+    }
     expect(errors, errors.join('\n')).toHaveLength(0);
+    console.info('--- Google Drive ingestion order test end');
   });
 });

@@ -94,4 +94,60 @@ export class RawItemRepository extends DBTool {
     const rows = await this.selectAction<RawItemRow>(sql);
     return rows[0] ?? null;
   }
+
+  /**
+   * Returns the latest raw.raw_item id (by id desc).
+   */
+  public async getLatestId(): Promise<number | null> {
+    const sql = `
+      SELECT ri.id
+      FROM raw.raw_item AS ri
+      ORDER BY ri.id DESC
+      LIMIT 1
+    `;
+    const rows = await this.selectAction<{ id?: number }>(sql);
+    const idValue = rows[0]?.id;
+    if (idValue === undefined || idValue === null) {
+      return null;
+    }
+    const parsed = typeof idValue === 'number' ? idValue : Number.parseInt(String(idValue), 10);
+    return Number.isFinite(parsed) ? parsed : null;
+  }
+
+  /**
+   * Returns rows from raw.raw_item for a specific source and external_id,
+   * ordered by created_utc descending.
+   */
+  public async getBySourceAndExternalId(source: string, externalId: string): Promise<RawItemRow[]> {
+    const safeSource = source.replace(/'/g, "''");
+    const safeExternalId = externalId.replace(/'/g, "''");
+    const sql = `
+      SELECT ri.*
+      FROM raw.raw_item AS ri
+      WHERE source = '${safeSource}'
+        AND external_id = '${safeExternalId}'
+      ORDER BY ri.created_utc DESC
+    `;
+    return this.selectAction<RawItemRow>(sql);
+  }
+
+  /**
+   * Returns rows from raw.raw_item for a specific source and external_thread,
+   * ordered by created_utc descending.
+   */
+  public async getBySourceAndExternalThread(
+    source: string,
+    externalThread: string
+  ): Promise<RawItemRow[]> {
+    const safeSource = source.replace(/'/g, "''");
+    const safeExternalThread = externalThread.replace(/'/g, "''");
+    const sql = `
+      SELECT ri.*
+      FROM raw.raw_item AS ri
+      WHERE source = '${safeSource}'
+        AND external_thread = '${safeExternalThread}'
+      ORDER BY ri.created_utc DESC
+    `;
+    return this.selectAction<RawItemRow>(sql);
+  }
 }

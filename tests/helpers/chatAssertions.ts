@@ -1,4 +1,4 @@
-import { expect } from '@playwright/test';
+import { expect } from '../testLogger';
 import { ChatResponse } from '../../src/api/models/chat';
 import { GeneralKnowledgeValidator } from '../../src/testing/validators/GeneralKnowledgeValidator';
 

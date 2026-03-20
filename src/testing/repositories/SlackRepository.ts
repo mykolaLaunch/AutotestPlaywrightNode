@@ -16,6 +16,23 @@ export interface SlackMessageDetail {
   subtype?: string;
 }
 
+export interface SlackSendMessagePayload {
+  channel: string;
+  text: string;
+}
+
+export interface SlackSendMessageResult {
+  ok: boolean;
+  ts?: string;
+  threadTs?: string;
+  errors: string[];
+}
+
+export interface SlackDeleteMessageResult {
+  ok: boolean;
+  errors: string[];
+}
+
 interface SlackHistoryResponse {
   ok: boolean;
   error?: string;
@@ -33,8 +50,19 @@ interface SlackHistoryResponse {
   };
 }
 
+interface SlackPostMessageResponse {
+  ok: boolean;
+  error?: string;
+  ts?: string;
+  message?: {
+    ts?: string;
+    thread_ts?: string;
+  };
+}
+
 export class SlackRepository {
   private readonly historyUrl = 'https://slack.com/api/conversations.history';
+  private readonly postMessageUrl = 'https://slack.com/api/chat.postMessage';
 
   public async getAllMessageIds(channelId: string): Promise<SlackMessageIdsResult> {
     const errors: string[] = [];
@@ -87,6 +115,87 @@ export class SlackRepository {
         `Failed to fetch Slack message ids: ${err instanceof Error ? err.message : String(err)}`
       );
       return { ids: [], errors, messageDetailsById: {} };
+    }
+  }
+
+  public async sendMessage(payload: SlackSendMessagePayload): Promise<SlackSendMessageResult> {
+    const errors: string[] = [];
+    try {
+      const token = this.getAuthToken();
+      if (!payload.channel || payload.channel.trim() === '') {
+        throw new Error('Slack channel id is required.');
+      }
+
+      const res = await fetch(this.postMessageUrl, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json; charset=utf-8'
+        },
+        body: JSON.stringify({
+          channel: payload.channel,
+          text: payload.text
+        })
+      });
+
+      if (!res.ok) {
+        return { ok: false, errors: [`Slack API http_${res.status}`] };
+      }
+
+      const data = (await res.json()) as SlackPostMessageResponse;
+      if (!data.ok) {
+        return { ok: false, errors: [data.error ?? 'Slack API error: unknown_error'] };
+      }
+
+      const ts = data.ts ?? data.message?.ts;
+      const threadTs = data.message?.thread_ts;
+      return { ok: true, ts, threadTs, errors };
+    } catch (err) {
+      errors.push(
+        `Failed to send Slack message: ${err instanceof Error ? err.message : String(err)}`
+      );
+      return { ok: false, errors };
+    }
+  }
+
+  public async deleteMessage(channel: string, ts: string): Promise<SlackDeleteMessageResult> {
+    const errors: string[] = [];
+    try {
+      const token = this.getAuthToken();
+      if (!channel || channel.trim() === '') {
+        throw new Error('Slack channel id is required.');
+      }
+      if (!ts || ts.trim() === '') {
+        throw new Error('Slack message ts is required.');
+      }
+
+      const res = await fetch('https://slack.com/api/chat.delete', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json; charset=utf-8'
+        },
+        body: JSON.stringify({
+          channel,
+          ts
+        })
+      });
+
+      if (!res.ok) {
+        return { ok: false, errors: [`Slack API http_${res.status}`] };
+      }
+
+      const data = (await res.json()) as { ok: boolean; error?: string };
+      if (!data.ok) {
+        return { ok: false, errors: [data.error ?? 'Slack API error: unknown_error'] };
+      }
+
+      return { ok: true, errors };
+    } catch (err) {
+      errors.push(
+        `Failed to delete Slack message: ${err instanceof Error ? err.message : String(err)}`
+      );
+      return { ok: false, errors };
     }
   }
 

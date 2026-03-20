@@ -36,6 +36,23 @@ export interface GmailMessageDateInfoResult {
   errors: string[];
 }
 
+export interface GmailSendMessagePayload {
+  from: string;
+  to: string;
+  subject: string;
+  body: string;
+}
+
+export interface GmailSendMessageResult {
+  id?: string;
+  threadId?: string;
+  errors: string[];
+}
+
+export interface GmailDeleteMessageResult {
+  errors: string[];
+}
+
 export class GmailRepository {
   private readonly tokenPath: string;
   private readonly credentialsPath: string;
@@ -171,6 +188,53 @@ export class GmailRepository {
     }
   }
 
+  public async sendMessage(
+    userId: string = 'me',
+    payload: GmailSendMessagePayload
+  ): Promise<GmailSendMessageResult> {
+    const errors: string[] = [];
+    try {
+      const auth = await this.buildAuthClient();
+      const gmail = google.gmail({ version: 'v1', auth });
+
+      const raw = this.buildRawMessage(payload);
+      const res = await gmail.users.messages.send({
+        userId,
+        requestBody: { raw }
+      });
+
+      return { id: res.data.id ?? undefined, threadId: res.data.threadId ?? undefined, errors };
+    } catch (err) {
+      errors.push(
+        `Failed to send Gmail message: ${err instanceof Error ? err.message : String(err)}`
+      );
+      return { errors };
+    }
+  }
+
+  public async deleteMessage(
+    userId: string,
+    messageId: string
+  ): Promise<GmailDeleteMessageResult> {
+    const errors: string[] = [];
+    try {
+      const auth = await this.buildAuthClient();
+      const gmail = google.gmail({ version: 'v1', auth });
+
+      await gmail.users.messages.delete({
+        userId,
+        id: messageId
+      });
+
+      return { errors };
+    } catch (err) {
+      errors.push(
+        `Failed to delete Gmail message: ${err instanceof Error ? err.message : String(err)}`
+      );
+      return { errors };
+    }
+  }
+
   private async buildAuthClient() {
     loadEnvOnce();
     const credentials = this.readJsonFile<Record<string, unknown>>(this.credentialsPath);
@@ -251,6 +315,23 @@ export class GmailRepository {
     }
 
     return { dateSource: 'unknown' };
+  }
+
+  private buildRawMessage(payload: GmailSendMessagePayload): string {
+    const headers = [
+      `From: ${payload.from}`,
+      `To: ${payload.to}`,
+      `Subject: ${payload.subject}`,
+      'MIME-Version: 1.0',
+      'Content-Type: text/plain; charset="UTF-8"'
+    ];
+
+    const message = `${headers.join('\r\n')}\r\n\r\n${payload.body}`;
+    return Buffer.from(message)
+      .toString('base64')
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=+$/g, '');
   }
 
   private readJsonFile<T>(filePath: string): T {

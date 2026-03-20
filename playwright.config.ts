@@ -5,6 +5,7 @@ export default defineConfig({
   timeout: 300_000,
   // reporter: 'html',
   reporter: [
+    ['line'],
     ['html'],
     ['allure-playwright']
   ],

@@ -21,6 +21,36 @@ export interface GoogleCalendarAllEventIdsResult extends GoogleCalendarEventIdsR
   eventDetailsById: Record<string, GoogleCalendarEventDetail>;
 }
 
+export interface GoogleCalendarEventWindowItem {
+  id: string;
+  summary: string;
+  start: string;
+  end: string;
+  isAllDay: boolean;
+}
+
+export interface GoogleCalendarEventWindowResult {
+  events: GoogleCalendarEventWindowItem[];
+  errors: string[];
+}
+
+export interface GoogleCalendarCreateEventPayload {
+  calendarId: string;
+  summary: string;
+  startIso: string;
+  endIso: string;
+  timeZone: string;
+}
+
+export interface GoogleCalendarCreateEventResult {
+  id?: string;
+  errors: string[];
+}
+
+export interface GoogleCalendarDeleteEventResult {
+  errors: string[];
+}
+
 export class GoogleCalendarRepository {
   private readonly tokenPath: string;
   private readonly credentialsPath: string;
@@ -130,6 +160,111 @@ export class GoogleCalendarRepository {
         `Failed to fetch Google Calendar event ids across calendars: ${err instanceof Error ? err.message : String(err)}`
       );
       return { ids: [], errors, calendarsCount: 0, eventDetailsById: {} };
+    }
+  }
+
+  public async getEventsInWindow(
+    calendarId: string,
+    timeMinIso: string,
+    timeMaxIso: string
+  ): Promise<GoogleCalendarEventWindowResult> {
+    const errors: string[] = [];
+    try {
+      const auth = await this.buildAuthClient();
+      const calendar = google.calendar({ version: 'v3', auth });
+
+      const events: GoogleCalendarEventWindowItem[] = [];
+      let pageToken: string | undefined;
+
+      do {
+        const res = await calendar.events.list({
+          calendarId,
+          timeMin: timeMinIso,
+          timeMax: timeMaxIso,
+          singleEvents: true,
+          orderBy: 'startTime',
+          maxResults: 2500,
+          pageToken
+        });
+
+        const items = res.data.items ?? [];
+        for (const item of items) {
+          if (!item.id) continue;
+          const startDateTime = item.start?.dateTime ?? null;
+          const endDateTime = item.end?.dateTime ?? null;
+          const startDate = item.start?.date ?? null;
+          const endDate = item.end?.date ?? null;
+          const isAllDay = Boolean(startDate && endDate);
+          const start = startDateTime ?? startDate ?? '';
+          const end = endDateTime ?? endDate ?? '';
+          if (!start || !end) continue;
+          events.push({
+            id: item.id,
+            summary: item.summary ?? '(no title)',
+            start,
+            end,
+            isAllDay
+          });
+        }
+
+        pageToken = res.data.nextPageToken ?? undefined;
+      } while (pageToken);
+
+      return { events, errors };
+    } catch (err) {
+      errors.push(
+        `Failed to fetch Google Calendar events: ${err instanceof Error ? err.message : String(err)}`
+      );
+      return { events: [], errors };
+    }
+  }
+
+  public async createEvent(
+    payload: GoogleCalendarCreateEventPayload
+  ): Promise<GoogleCalendarCreateEventResult> {
+    const errors: string[] = [];
+    try {
+      const auth = await this.buildAuthClient();
+      const calendar = google.calendar({ version: 'v3', auth });
+
+      const res = await calendar.events.insert({
+        calendarId: payload.calendarId,
+        requestBody: {
+          summary: payload.summary,
+          start: { dateTime: payload.startIso, timeZone: payload.timeZone },
+          end: { dateTime: payload.endIso, timeZone: payload.timeZone }
+        }
+      });
+
+      return { id: res.data.id ?? undefined, errors };
+    } catch (err) {
+      errors.push(
+        `Failed to create Google Calendar event: ${err instanceof Error ? err.message : String(err)}`
+      );
+      return { errors };
+    }
+  }
+
+  public async deleteEvent(
+    calendarId: string,
+    eventId: string
+  ): Promise<GoogleCalendarDeleteEventResult> {
+    const errors: string[] = [];
+    try {
+      const auth = await this.buildAuthClient();
+      const calendar = google.calendar({ version: 'v3', auth });
+
+      await calendar.events.delete({
+        calendarId,
+        eventId
+      });
+
+      return { errors };
+    } catch (err) {
+      errors.push(
+        `Failed to delete Google Calendar event: ${err instanceof Error ? err.message : String(err)}`
+      );
+      return { errors };
     }
   }
 

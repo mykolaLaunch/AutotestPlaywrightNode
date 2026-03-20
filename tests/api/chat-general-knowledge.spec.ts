@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from '../testLogger';
 import { ChatRepository } from '../../src/api/repositories/ChatRepository';
 import {
   AnswerEvaluationValidator,
