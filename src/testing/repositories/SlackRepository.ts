@@ -6,6 +6,11 @@ export interface SlackMessageIdsResult {
   messageDetailsById: Record<string, SlackMessageDetail>;
 }
 
+export interface SlackMessageDetailsResult {
+  messages: SlackConversationMessage[];
+  errors: string[];
+}
+
 export interface SlackMessageDetail {
   id: string;
   ts: string;
@@ -13,6 +18,17 @@ export interface SlackMessageDetail {
   date: string;
   text: string;
   user?: string;
+  subtype?: string;
+}
+
+export interface SlackConversationMessage {
+  ts: string;
+  threadTs: string;
+  text: string;
+  user?: string;
+  username?: string;
+  botId?: string;
+  clientMsgId?: string;
   subtype?: string;
 }
 
@@ -41,6 +57,7 @@ interface SlackHistoryResponse {
     thread_ts?: string;
     text?: string;
     user?: string;
+    client_msg_id?: string;
     bot_id?: string;
     username?: string;
     subtype?: string;
@@ -115,6 +132,55 @@ export class SlackRepository {
         `Failed to fetch Slack message ids: ${err instanceof Error ? err.message : String(err)}`
       );
       return { ids: [], errors, messageDetailsById: {} };
+    }
+  }
+
+  public async getAllMessages(channelId: string): Promise<SlackMessageDetailsResult> {
+    const errors: string[] = [];
+    const messages: SlackConversationMessage[] = [];
+
+    try {
+      const token = this.getAuthToken();
+      if (!channelId || channelId.trim() === '') {
+        throw new Error('Slack channel id is required.');
+      }
+
+      let cursor: string | undefined;
+      do {
+        const res = await this.fetchHistoryPage(token, channelId, cursor);
+        if (!res.ok) {
+          errors.push(`Slack API error: ${res.error ?? 'unknown_error'}`);
+          break;
+        }
+
+        const pageMessages = res.messages ?? [];
+        for (const msg of pageMessages) {
+          if (!msg.ts) {
+            continue;
+          }
+          const threadTs = msg.thread_ts ?? msg.ts;
+          messages.push({
+            ts: msg.ts,
+            threadTs,
+            text: msg.text ?? '(no text)',
+            user: msg.user,
+            username: msg.username,
+            botId: msg.bot_id,
+            clientMsgId: msg.client_msg_id,
+            subtype: msg.subtype
+          });
+        }
+
+        const next = res.response_metadata?.next_cursor ?? '';
+        cursor = next.trim() === '' ? undefined : next.trim();
+      } while (cursor);
+
+      return { messages, errors };
+    } catch (err) {
+      errors.push(
+        `Failed to fetch Slack messages: ${err instanceof Error ? err.message : String(err)}`
+      );
+      return { messages: [], errors };
     }
   }
 

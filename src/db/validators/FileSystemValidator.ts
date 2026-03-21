@@ -18,6 +18,17 @@ export type FileDepthLoadOrderValidationResult = {
   skippedItems: number;
 };
 
+export type FileSystemUniquenessValidationResult = {
+  errors: number;
+  totalFiles: number;
+  totalDbRows: number;
+  uniqueDbPaths: number;
+  missing: number;
+  duplicates: number;
+  extra: number;
+  invalid: number;
+};
+
 export class FileSystemValidator {
   public validate(
     rawItems: RawItemRow[],
@@ -102,6 +113,94 @@ export class FileSystemValidator {
 
     console.info(`File system validation finished with ${errors} error(s).`);
     return { errors };
+  }
+
+  /**
+   * Validates that every file in the file tree exists in DB exactly once,
+   * and there are no duplicate or extra DB entries.
+   */
+  public validateUniqueLoad(
+    rawItems: RawItemRow[],
+    fileDepthMap: FileDepthMap,
+    rootDir: string = 'TestFilesDirectory'
+  ): FileSystemUniquenessValidationResult {
+    const resolvedRoot = path.resolve(rootDir);
+    const dbCounts = new Map<string, number>();
+    let errors = 0;
+    let missing = 0;
+    let duplicates = 0;
+    let extra = 0;
+    let invalid = 0;
+    const duplicatePaths = new Set<string>();
+
+    console.info('File system uniqueness validation started.');
+
+    for (const [index, row] of rawItems.entries()) {
+      const externalId = (row as { external_id?: unknown }).external_id;
+      if (typeof externalId !== 'string' || externalId.trim() === '') {
+        errors += 1;
+        invalid += 1;
+        console.error(
+          `Invalid external_id at DB row #${index + 1}: expected non-empty string, got ${typeof externalId}`
+        );
+        continue;
+      }
+
+      const nextCount = (dbCounts.get(externalId) ?? 0) + 1;
+      dbCounts.set(externalId, nextCount);
+    }
+
+    for (const [dbPath, count] of dbCounts.entries()) {
+      if (count > 1) {
+        errors += 1;
+        duplicates += 1;
+        duplicatePaths.add(dbPath);
+        console.error(`Duplicate external_id in DB: ${dbPath} (count=${count})`);
+      }
+
+      if (!Object.prototype.hasOwnProperty.call(fileDepthMap, dbPath)) {
+        errors += 1;
+        extra += 1;
+        console.error(`DB contains extra file not in filesystem: ${dbPath}`);
+      }
+
+      const relative = path.relative(resolvedRoot, dbPath);
+      if (relative.startsWith('..') || path.isAbsolute(relative)) {
+        errors += 1;
+        console.error(`DB path is outside root directory: ${dbPath}`);
+      }
+    }
+
+    for (const filePath of Object.keys(fileDepthMap)) {
+      if (!dbCounts.has(filePath)) {
+        errors += 1;
+        missing += 1;
+        console.error(`Missing DB item for file: ${filePath}`);
+        continue;
+      }
+
+      const count = dbCounts.get(filePath) ?? 0;
+      if (count !== 1 && !duplicatePaths.has(filePath)) {
+        errors += 1;
+        duplicates += 1;
+        console.error(`File not loaded exactly once: ${filePath} (count=${count})`);
+      }
+    }
+
+    console.info(
+      `File system uniqueness validation finished: errors=${errors}, missing=${missing}, duplicates=${duplicates}, extra=${extra}, invalid=${invalid}`
+    );
+
+    return {
+      errors,
+      totalFiles: Object.keys(fileDepthMap).length,
+      totalDbRows: rawItems.length,
+      uniqueDbPaths: dbCounts.size,
+      missing,
+      duplicates,
+      extra,
+      invalid
+    };
   }
 
   /**

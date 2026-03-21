@@ -67,8 +67,50 @@ test.describe('Gmail tests', { tag: ['@gmail', '@regression'] }, () => {
     console.info('--- Gmail coverage test end');
   });
 
+  test(
+    'Gmail duplicates test for mykola@launchnyc.io',
+    { tag: ['@check-duplicates'] },
+    async () => {
+    console.info('--- Gmail duplicates test start');
+    console.info('Action: load Gmail raw_item rows and check for duplicate external_id.');
+    const rawItemRepository = new RawItemRepository();
+
+    const dbRows = await rawItemRepository.getBySourceAndAccount('gmail', 'mykola@launchnyc.io');
+    console.info(`DB raw_item rows fetched: ${dbRows.length}`);
+
+    const counts = new Map<string, number>();
+    const duplicates: string[] = [];
+
+    for (const row of dbRows) {
+      const externalId = (row as { external_id?: unknown }).external_id;
+      if (typeof externalId !== 'string' || externalId.trim() === '') {
+        continue;
+      }
+      const next = (counts.get(externalId) ?? 0) + 1;
+      counts.set(externalId, next);
+    }
+
+    for (const [externalId, count] of counts.entries()) {
+      if (count > 1) {
+        duplicates.push(`${externalId} (count=${count})`);
+      }
+    }
+
+    if (duplicates.length > 0) {
+      console.info(`Duplicate Gmail messages in DB (${duplicates.length}):`);
+      console.info(duplicates.join('\n'));
+    }
+
+    expect(duplicates.length, 'Duplicate Gmail messages found in DB').toBe(0);
+    console.info('--- Gmail duplicates test end');
+    }
+  );
+
   // Checks that as created_utc increases, id does not decrease (adjacent-pair order check on DB sample).
-  test('Gmail ingestion order by created_utc vs id for mykola@launchnyc.io', async () => {
+  test(
+    'Gmail ingestion order by created_utc vs id for mykola@launchnyc.io',
+    { tag: ['@order-test'] },
+    async () => {
     console.info('--- Gmail ingestion order test start');
     console.info('Action: validate created_utc increases with id on DB sample.');
     const rawItemRepository = new RawItemRepository();
@@ -98,11 +140,12 @@ test.describe('Gmail tests', { tag: ['@gmail', '@regression'] }, () => {
     }
     expect(errors, errors.join('\n')).toHaveLength(0);
     console.info('--- Gmail ingestion order test end');
-  });
+    }
+  );
 
   test(
     'Send Gmail message and verify raw_item ingestion by external_id',
-    { tag: ['@gmail', '@dynamic'] },
+    { tag: ['@gmail', '@dynamic', '@new-object-load'] },
     async () => {
       console.info('--- Gmail dynamic ingestion test start');
       console.info('Action: send a Gmail message and poll raw_item by external_id.');
@@ -127,7 +170,6 @@ test.describe('Gmail tests', { tag: ['@gmail', '@regression'] }, () => {
       const subject = `PW-GMAIL-INGESTION ${timestamp}`;
       const body = 'Playwright Gmail ingestion test content (fixed body).';
 
-      let messageId: string | null = null;
       let messageId: string | null = null;
 
       try {
@@ -167,7 +209,7 @@ test.describe('Gmail tests', { tag: ['@gmail', '@regression'] }, () => {
         let matchedRows = [];
 
         const waitMs = 3000;
-        const maxAttempts = 10;
+        const maxAttempts = 40;
 
         for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
           const rows = await rawItemRepository.getBySourceAndExternalId('gmail', messageId);

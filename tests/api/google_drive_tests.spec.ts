@@ -87,7 +87,10 @@ test.describe('Google Drive tests', { tag: ['@google-drive', '@regression'] }, (
   });
 
   // Checks that as updated_utc increases, id does not decrease (adjacent-pair order check on DB sample).
-  test('Drive ingestion order by updated_utc vs id for me', async () => {
+  test(
+    'Drive ingestion order by updated_utc vs id for me',
+    { tag: ['@order-test'] },
+    async () => {
     console.info('--- Google Drive ingestion order test start');
     console.info('Action: validate updated_utc increases with id on DB sample.');
     const rawItemRepository = new RawItemRepository();
@@ -113,5 +116,6 @@ test.describe('Google Drive tests', { tag: ['@google-drive', '@regression'] }, (
     }
     expect(errors, errors.join('\n')).toHaveLength(0);
     console.info('--- Google Drive ingestion order test end');
-  });
+    }
+  );
 });

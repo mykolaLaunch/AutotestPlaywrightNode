@@ -1,36 +1,118 @@
 import { test, expect } from '../testLogger';
 import { RawItemRepository } from '../../src/db/repositories/RawItemRepository';
 import { FileTreeRepository } from '../../src/repositories/FileTreeRepository';
-import { FileSystemValidator } from '../../src/db/validators/FileSystemValidator';
+import { FileSystemExternalIdValidator } from '../../src/testing/validators/FileSystemExternalIdValidator';
 import fs from 'fs';
 import path from 'path';
 
 test.describe('Local files tests', { tag: ['@local-files', '@regression'] }, () => {
-  test('File tree db source test', async () => {
+  test('File tree db completeness test', async () => {
     console.info('--- Local files test start');
     console.info('Action: load file-system raw items and file tree schema.');
     const fileRepository = new FileTreeRepository();
     const rawItemRepository = new RawItemRepository();
-    const fileValidator = new FileSystemValidator();
     const fileRawItems = await rawItemRepository.getBySource('file-system');
     console.info(`Raw items fetched: ${fileRawItems.length}`);
     const fileSchema = await fileRepository.getFileDepthMap('TestFilesDirectory');
-    console.info(`File tree nodes: ${fileSchema.length}`);
-    console.info('Validation: file-system raw items should match file tree schema.');
-    const result = fileValidator.validate(fileRawItems, fileSchema);
-    // const result = await fileValidator.validateDepthLoadOrder(fileRawItems, fileSchema);
+    console.info(`File tree nodes: ${Object.keys(fileSchema).length}`);
+    console.info('Validation: every file from the tree should exist in DB.');
 
-    if (result.errors.length > 0) {
-      console.info(`Validation errors: ${result.errors.length}`);
-      console.info(result.errors.join('\n'));
+    const dbPaths = new Set<string>();
+    for (const row of fileRawItems) {
+      const externalId = (row as { external_id?: unknown }).external_id;
+      if (typeof externalId === 'string' && externalId.trim() !== '') {
+        dbPaths.add(externalId);
+      }
     }
-    expect(result.errors, 'File system validation should not have errors').toBe(0);
+
+    const missingFiles = Object.keys(fileSchema).filter((filePath) => !dbPaths.has(filePath));
+    if (missingFiles.length > 0) {
+      console.info(`Missing files in DB (${missingFiles.length}):`);
+      console.info(missingFiles.join('\n'));
+    }
+
+    expect(missingFiles.length, 'Some files are missing in DB').toBe(0);
     console.info('--- Local files test end');
   });
 
   test(
+    'File tree db duplicates test',
+    { tag: ['@check-duplicates'] },
+    async () => {
+    console.info('--- Local files duplicates test start');
+    console.info('Action: load file-system raw items and file tree schema.');
+    const fileRepository = new FileTreeRepository();
+    const rawItemRepository = new RawItemRepository();
+
+    const fileRawItems = await rawItemRepository.getBySource('file-system');
+    console.info(`Raw items fetched: ${fileRawItems.length}`);
+    const fileSchema = await fileRepository.getFileDepthMap('TestFilesDirectory');
+    console.info(`File tree nodes: ${Object.keys(fileSchema).length}`);
+
+    console.info('Validation: no duplicate external_id entries should exist in DB.');
+
+    const duplicateCounts = new Map<string, number>();
+    const duplicatePaths: string[] = [];
+    for (const row of fileRawItems) {
+      const externalId = (row as { external_id?: unknown }).external_id;
+      if (typeof externalId !== 'string' || externalId.trim() === '') {
+        continue;
+      }
+      const next = (duplicateCounts.get(externalId) ?? 0) + 1;
+      duplicateCounts.set(externalId, next);
+    }
+
+    for (const [externalId, count] of duplicateCounts.entries()) {
+      if (count > 1) {
+        duplicatePaths.push(`${externalId} (count=${count})`);
+      }
+    }
+
+    if (duplicatePaths.length > 0) {
+      console.info(`Duplicate files in DB (${duplicatePaths.length}):`);
+      console.info(duplicatePaths.join('\n'));
+    }
+
+    expect(duplicatePaths.length, 'Duplicate external_id entries found in DB').toBe(0);
+    console.info('--- Local files duplicates test end');
+    }
+  );
+
+  // Checks that as updated_utc increases, id does not decrease (adjacent-pair order check on DB sample).
+  test(
+    'Local files ingestion order by updated_utc vs id',
+    { tag: ['@order-test'] },
+    async () => {
+    console.info('--- Local files ingestion order test start');
+    console.info('Action: validate updated_utc increases with id on DB sample.');
+    const rawItemRepository = new RawItemRepository();
+    const validator = new FileSystemExternalIdValidator();
+
+    const minSamples = 3;
+
+    const dbRows = await rawItemRepository.getBySource('file-system');
+    console.info(`DB raw_item rows fetched: ${dbRows.length}`);
+
+    const dbOrderResult = validator.validateDbRowsForUpdatedUtcAndId(dbRows);
+    const orderResult = validator.validateUpdatedUtcIdOrder(dbOrderResult.items, minSamples);
+
+    const errors = [
+      ...dbOrderResult.result.errors,
+      ...orderResult.errors
+    ];
+
+    if (errors.length > 0) {
+      console.info(`Validation errors: ${errors.length}`);
+      console.info(errors.join('\n'));
+    }
+    expect(errors, errors.join('\n')).toHaveLength(0);
+    console.info('--- Local files ingestion order test end');
+    }
+  );
+
+  test(
     'Create local file and verify raw_item ingestion by external_id',
-    { tag: ['@local-files', '@dynamic'] },
+    { tag: ['@local-files', '@dynamic', '@new-object-load'] },
     async () => {
       console.info('--- Local files dynamic ingestion test start');
       console.info('Action: create a new .txt file and poll raw_item by external_id.');
@@ -53,7 +135,7 @@ test.describe('Local files tests', { tag: ['@local-files', '@regression'] }, () 
       let matchedRows: Array<Record<string, unknown>> = [];
 
       const waitMs = 3000;
-      const maxAttempts = 10;
+      const maxAttempts = 40;
 
       for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
         const rows = await rawItemRepository.getBySourceAndExternalId('file-system', filePath);

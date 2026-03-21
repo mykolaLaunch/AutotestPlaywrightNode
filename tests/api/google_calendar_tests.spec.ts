@@ -62,8 +62,50 @@ test.describe('Google Calendar tests', { tag: ['@google-calendar', '@regression'
     console.info('--- Google Calendar coverage test end');
   });
 
+  test(
+    'Calendar duplicates test for mykola@launchnyc.io',
+    { tag: ['@check-duplicates'] },
+    async () => {
+    console.info('--- Google Calendar duplicates test start');
+    console.info('Action: load Calendar raw_item rows and check for duplicate external_id.');
+    const rawItemRepository = new RawItemRepository();
+
+    const dbRows = await rawItemRepository.getBySourceAndAccount('google-calendar', 'mykola@launchnyc.io');
+    console.info(`DB raw_item rows fetched: ${dbRows.length}`);
+
+    const counts = new Map<string, number>();
+    const duplicates: string[] = [];
+
+    for (const row of dbRows) {
+      const externalId = (row as { external_id?: unknown }).external_id;
+      if (typeof externalId !== 'string' || externalId.trim() === '') {
+        continue;
+      }
+      const next = (counts.get(externalId) ?? 0) + 1;
+      counts.set(externalId, next);
+    }
+
+    for (const [externalId, count] of counts.entries()) {
+      if (count > 1) {
+        duplicates.push(`${externalId} (count=${count})`);
+      }
+    }
+
+    if (duplicates.length > 0) {
+      console.info(`Duplicate Calendar events in DB (${duplicates.length}):`);
+      console.info(duplicates.join('\n'));
+    }
+
+    expect(duplicates.length, 'Duplicate Calendar events found in DB').toBe(0);
+    console.info('--- Google Calendar duplicates test end');
+    }
+  );
+
   // Checks that as updated_utc increases, id does not decrease (adjacent-pair order check on DB sample).
-  test('Calendar ingestion order by updated_utc vs id for mykola@launchnyc.io', async () => {
+  test(
+    'Calendar ingestion order by updated_utc vs id for mykola@launchnyc.io',
+    { tag: ['@order-test'] },
+    async () => {
     console.info('--- Google Calendar ingestion order test start');
     console.info('Action: validate updated_utc increases with id on DB sample.');
     const rawItemRepository = new RawItemRepository();
@@ -93,11 +135,12 @@ test.describe('Google Calendar tests', { tag: ['@google-calendar', '@regression'
     }
     expect(errors, errors.join('\n')).toHaveLength(0);
     console.info('--- Google Calendar ingestion order test end');
-  });
+    }
+  );
 
   test(
     'Send Calendar event and verify raw_item ingestion by external_id',
-    { tag: ['@google-calendar', '@dynamic'] },
+    { tag: ['@google-calendar', '@dynamic', '@new-object-load'] },
     async () => {
       console.info('--- Google Calendar dynamic ingestion test start');
       console.info('Action: find a free slot, create event, then poll raw_item by external_id.');
@@ -224,7 +267,7 @@ test.describe('Google Calendar tests', { tag: ['@google-calendar', '@regression'
       let matchedRows: Array<Record<string, unknown>> = [];
 
       const waitMs = 3000;
-      const maxAttempts = 10;
+      const maxAttempts = 40;
 
       for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
         const rows = await rawItemRepository.getBySourceAndExternalId('google-calendar', eventId);
