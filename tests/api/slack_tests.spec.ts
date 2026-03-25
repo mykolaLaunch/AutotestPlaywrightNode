@@ -336,27 +336,27 @@ test.describe('Slack tests', { tag: ['@slack', '@regression'] }, () => {
         }
       }
 
-      // try {
-      //   expect(matchedRows.length, 'No raw_item row found for sent Slack message.').toBeGreaterThan(0);
-      //
-      //   const latestRow = matchedRows[0] as { id?: number; external_thread?: string };
-      //   expect(latestRow.external_thread, 'raw_item external_thread mismatch.').toBe(messageTs);
-      //
-      //   if (typeof latestRow.id === 'number' && typeof beforeLatestId === 'number') {
-      //     expect(latestRow.id, 'raw_item id should be greater than pre-send latest id.').toBeGreaterThan(beforeLatestId);
-      //   }
-      //
-      //   console.info('--- Slack dynamic ingestion test end');
-      // } finally {
-      //   if (messageTs) {
-      //     const deleteResult = await slackRepository.deleteMessage(channelId, messageTs);
-      //     if (deleteResult.errors.length > 0) {
-      //       console.info(`Slack cleanup errors: ${deleteResult.errors.join('\n')}`);
-      //     } else {
-      //       console.info('Slack cleanup: message deleted.');
-      //     }
-      //   }
-      // }
+      try {
+        expect(matchedRows.length, 'No raw_item row found for sent Slack message.').toBeGreaterThan(0);
+
+        const latestRow = matchedRows[0] as { id?: number; external_thread?: string };
+        expect(latestRow.external_thread, 'raw_item external_thread mismatch.').toBe(messageTs);
+
+        if (typeof latestRow.id === 'number' && typeof beforeLatestId === 'number') {
+          expect(latestRow.id, 'raw_item id should be greater than pre-send latest id.').toBeGreaterThan(beforeLatestId);
+        }
+
+        console.info('--- Slack dynamic ingestion test end');
+      } finally {
+        if (messageTs) {
+          const deleteResult = await slackRepository.deleteMessage(channelId, messageTs);
+          if (deleteResult.errors.length > 0) {
+            console.info(`Slack cleanup errors: ${deleteResult.errors.join('\n')}`);
+          } else {
+            console.info('Slack cleanup: message deleted.');
+          }
+        }
+      }
     }
   );
 });

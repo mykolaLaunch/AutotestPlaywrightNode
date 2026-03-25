@@ -7,7 +7,7 @@ This file contains detailed explanations of automated tests.
 **Spec:** `tests/api/gmail_tests.spec.ts`
 
 **Purpose**
-Verify that, for Gmail raw items in the database, later `created_utc` timestamps do not correspond to smaller `id` values. In other words, as `created_utc` increases, `id` should not decrease within the sampled dataset.
+Verify that, for Gmail raw items in the database, later `created_utc` timestamps do not correspond to larger `id` values. In other words, as `created_utc` increases, `id` should not increase within the sampled dataset.
 
 **Data source**
 `raw.raw_item` filtered by:
@@ -27,7 +27,7 @@ Verify that, for Gmail raw items in the database, later `created_utc` timestamps
 2. **Order check (pair chain)**
    - Valid rows are sorted by `created_utc` ascending (earlier → later), with `id` as a tie-breaker.
    - Each adjacent pair is compared:
-     - If `created_utc(A) < created_utc(B)` but `id(A) > id(B)`, this is a violation.
+     - If `created_utc(A) < created_utc(B)` but `id(A) < id(B)`, this is a violation.
    - Any violations are reported with the concrete timestamps and ids.
 
 **Fail conditions**
@@ -36,7 +36,7 @@ Verify that, for Gmail raw items in the database, later `created_utc` timestamps
 - Any detected order violation in the adjacent-pair chain.
 
 **Why adjacent pairs are enough**
-If any later `created_utc` has a smaller `id` than an earlier one, the inversion will appear between some adjacent pair in the list sorted by `created_utc`.
+If any later `created_utc` has a larger `id` than an earlier one, the inversion will appear between some adjacent pair in the list sorted by `created_utc`.
 
 ## Drive ingestion order by updated_utc vs id for me
 

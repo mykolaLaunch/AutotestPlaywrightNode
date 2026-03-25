@@ -49,6 +49,14 @@ export interface SlackDeleteMessageResult {
   errors: string[];
 }
 
+export interface SlackDeleteAllMessagesResult {
+  ok: boolean;
+  attempted: number;
+  deleted: number;
+  skipped: number;
+  errors: string[];
+}
+
 interface SlackHistoryResponse {
   ok: boolean;
   error?: string;
@@ -265,6 +273,64 @@ export class SlackRepository {
     }
   }
 
+  public async deleteAllMessages(
+    channel: string,
+    options?: { delayMs?: number; max?: number; botOnly?: boolean }
+  ): Promise<SlackDeleteAllMessagesResult> {
+    const errors: string[] = [];
+    const delayMs = Math.max(0, options?.delayMs ?? 300);
+    const max = options?.max ?? Number.POSITIVE_INFINITY;
+    const botOnly = options?.botOnly ?? true;
+
+    if (!channel || channel.trim() === '') {
+      return {
+        ok: false,
+        attempted: 0,
+        deleted: 0,
+        skipped: 0,
+        errors: ['Slack channel id is required.']
+      };
+    }
+
+    const { messages, errors: fetchErrors } = await this.getAllMessages(channel);
+    errors.push(...fetchErrors);
+
+    const seen = new Set<string>();
+    let attempted = 0;
+    let deleted = 0;
+    let skipped = 0;
+
+    for (const msg of messages) {
+      if (!msg.ts || seen.has(msg.ts)) {
+        continue;
+      }
+      seen.add(msg.ts);
+      if (botOnly && !this.isBotMessage(msg)) {
+        skipped += 1;
+        continue;
+      }
+      attempted += 1;
+      if (attempted > max) {
+        break;
+      }
+
+      const result = await this.deleteMessageWithRetry(channel, msg.ts);
+      if (!result.ok) {
+        for (const err of result.errors) {
+          errors.push(`ts=${msg.ts}: ${err}`);
+        }
+      } else {
+        deleted += 1;
+      }
+
+      if (delayMs > 0) {
+        await this.sleep(delayMs);
+      }
+    }
+
+    return { ok: errors.length === 0, attempted, deleted, skipped, errors };
+  }
+
   private async fetchHistoryPage(
     token: string,
     channelId: string,
@@ -324,5 +390,32 @@ export class SlackRepository {
     }
 
     return token;
+  }
+
+  private isBotMessage(msg: SlackConversationMessage): boolean {
+    return Boolean(msg.botId) || msg.subtype === 'bot_message';
+  }
+
+  private async deleteMessageWithRetry(
+    channel: string,
+    ts: string
+  ): Promise<SlackDeleteMessageResult> {
+    const first = await this.deleteMessage(channel, ts);
+    if (first.ok) {
+      return first;
+    }
+
+    const hasRateLimit = first.errors.some((err) => err.includes('http_429'));
+    if (!hasRateLimit) {
+      return first;
+    }
+
+    await this.sleep(1500);
+    return this.deleteMessage(channel, ts);
+  }
+
+  private async sleep(ms: number): Promise<void> {
+    if (ms <= 0) return;
+    await new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

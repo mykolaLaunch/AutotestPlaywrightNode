@@ -106,13 +106,13 @@ test.describe('Gmail tests', { tag: ['@gmail', '@regression'] }, () => {
     }
   );
 
-  // Checks that as created_utc increases, id does not decrease (adjacent-pair order check on DB sample).
+  // Checks that as created_utc increases, id does not increase (adjacent-pair order check on DB sample).
   test(
     'Gmail ingestion order by created_utc vs id for mykola@launchnyc.io',
     { tag: ['@order-test'] },
     async () => {
     console.info('--- Gmail ingestion order test start');
-    console.info('Action: validate created_utc increases with id on DB sample.');
+    console.info('Action: validate created_utc increases while id decreases on DB sample.');
     const rawItemRepository = new RawItemRepository();
     const validator = new GmailExternalIdValidator();
 

@@ -187,9 +187,9 @@ export class GmailExternalIdValidator {
       const current = sorted[i];
       const next = sorted[i + 1];
 
-      if (current.createdUtcMs < next.createdUtcMs && current.id > next.id) {
+      if (current.createdUtcMs < next.createdUtcMs && current.id < next.id) {
         errors.push(
-          `Order mismatch: created_utc ${current.createdUtcIso} (id=${current.id}) is earlier than ${next.createdUtcIso} (id=${next.id}), but id is larger.`
+          `Order mismatch: created_utc ${current.createdUtcIso} (id=${current.id}) is earlier than ${next.createdUtcIso} (id=${next.id}), but id is smaller.`
         );
       }
     }

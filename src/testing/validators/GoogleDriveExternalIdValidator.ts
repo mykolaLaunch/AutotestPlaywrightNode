@@ -103,9 +103,9 @@ export class GoogleDriveExternalIdValidator {
       const current = sorted[i];
       const next = sorted[i + 1];
 
-      if (current.updatedUtcMs < next.updatedUtcMs && current.id > next.id) {
+      if (current.updatedUtcMs < next.updatedUtcMs && current.id < next.id) {
         errors.push(
-          `Order mismatch: updated_utc ${current.updatedUtcIso} (id=${current.id}) is earlier than ${next.updatedUtcIso} (id=${next.id}), but id is larger.`
+          `Order mismatch: updated_utc ${current.updatedUtcIso} (id=${current.id}) is earlier than ${next.updatedUtcIso} (id=${next.id}), but id is smaller.`
         );
       }
     }

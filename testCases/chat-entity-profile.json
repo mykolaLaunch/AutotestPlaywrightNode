@@ -1,0 +1,61 @@
+[
+  {
+    "id": "TC-ENT-001",
+    "question": "Tell me about Alex Carter and his role on Puzzle Harbor.",
+    "expectations": {
+      "mustContain": ["Alex Carter", "Puzzle Harbor"],
+      "mustMatch": [
+        {
+          "pattern": "Senior\\s+QA\\s+Automation\\s+Engineer",
+          "flags": "i"
+        }
+      ]
+    }
+  },
+  {
+    "id": "TC-ENT-002",
+    "question": "What are Alex Carter's main responsibilities as the QA automation lead?",
+    "expectations": {
+      "mustContain": ["regression", "release"],
+      "mustMatch": [
+        {
+          "pattern": "risk[-\\s]?based",
+          "flags": "i"
+        }
+      ]
+    }
+  },
+  {
+    "id": "TC-ENT-003",
+    "question": "Describe Alex Carter's working style and how he makes decisions.",
+    "expectations": {
+      "mustContain": ["evidence", "crash", "metrics"]
+    }
+  },
+  {
+    "id": "TC-ENT-004",
+    "question": "Name at least three of Alex Carter's current focus areas on Puzzle Harbor.",
+    "expectations": {
+      "mustContain": ["tutorial", "reward"],
+      "mustMatch": [
+        {
+          "pattern": "(save\\s*/\\s*restore|save\\s+restore|android\\s+crash|regression)",
+          "flags": "i"
+        }
+      ]
+    }
+  },
+  {
+    "id": "TC-ENT-005",
+    "question": "Does Alex Carter avoid hiding defects behind retries? Explain briefly.",
+    "expectations": {
+      "mustContain": ["defect", "retries"],
+      "mustMatch": [
+        {
+          "pattern": "avoid.*retries|retries.*avoid",
+          "flags": "i"
+        }
+      ]
+    }
+  }
+]

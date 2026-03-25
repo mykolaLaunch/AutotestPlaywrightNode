@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "test": "playwright test",
-    "test:instances": "playwright test tests/api/admin-instances.spec.ts",
+    "test:instances": "playwright test tests/not_used/admin-instances.spec.ts",
     "typecheck": "tsc --noEmit",
     "evaluate:chat": "node scripts/evaluate-chat-logs.js --spec testCases/chat-general-knowledge.json --logs test-results/chat-logs/run-latest.jsonl --mode rule",
     "report:chat": "node scripts/generate-chat-report.js --logs test-results/chat-logs",

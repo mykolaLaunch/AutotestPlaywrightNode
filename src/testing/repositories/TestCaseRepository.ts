@@ -15,6 +15,12 @@ export interface MixedRetrievalCase {
   expectations?: AnswerExpectations;
 }
 
+export interface EntityProfileCase {
+  id: string;
+  question: string;
+  expectations?: AnswerExpectations;
+}
+
 export class TestCaseRepository {
   private readonly baseDir: string;
 
@@ -28,6 +34,10 @@ export class TestCaseRepository {
 
   public getMixedRetrievalCases(): MixedRetrievalCase[] {
     return this.readJson<MixedRetrievalCase[]>('chat-mixed-retrieval.json');
+  }
+
+  public getEntityProfileCases(): EntityProfileCase[] {
+    return this.readJson<EntityProfileCase[]>('chat-entity-profile.json');
   }
 
   private readJson<T>(fileName: string): T {

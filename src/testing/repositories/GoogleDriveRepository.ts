@@ -16,6 +16,15 @@ export interface GoogleDriveFileDetail {
   parentIds: string[];
 }
 
+export interface GoogleDriveCreateFileResult {
+  id?: string;
+  errors: string[];
+}
+
+export interface GoogleDriveDeleteFileResult {
+  errors: string[];
+}
+
 export class GoogleDriveRepository {
   private readonly tokenPath: string;
   private readonly credentialsPath: string;
@@ -123,6 +132,64 @@ export class GoogleDriveRepository {
     }
 
     return nameMap;
+  }
+
+  public async createTextFile(
+    name: string,
+    content: string,
+    parentId?: string,
+    userId: string = 'me'
+  ): Promise<GoogleDriveCreateFileResult> {
+    const errors: string[] = [];
+    try {
+      const auth = await this.buildAuthClient();
+      const drive = google.drive({ version: 'v3', auth });
+
+      const requestBody: {
+        name: string;
+        parents?: string[];
+      } = { name };
+
+      if (parentId) {
+        requestBody.parents = [parentId];
+      }
+
+      const res = await drive.files.create({
+        requestBody,
+        media: {
+          mimeType: 'text/plain',
+          body: content
+        },
+        fields: 'id'
+      });
+
+      const fileId = res.data.id ?? undefined;
+      if (!fileId) {
+        errors.push('Google Drive create did not return file id.');
+      }
+
+      return { id: fileId, errors };
+    } catch (err) {
+      errors.push(
+        `Failed to create Google Drive file: ${err instanceof Error ? err.message : String(err)}`
+      );
+      return { id: undefined, errors };
+    }
+  }
+
+  public async deleteFile(fileId: string, userId: string = 'me'): Promise<GoogleDriveDeleteFileResult> {
+    const errors: string[] = [];
+    try {
+      const auth = await this.buildAuthClient();
+      const drive = google.drive({ version: 'v3', auth });
+      await drive.files.delete({ fileId });
+      return { errors };
+    } catch (err) {
+      errors.push(
+        `Failed to delete Google Drive file ${fileId}: ${err instanceof Error ? err.message : String(err)}`
+      );
+      return { errors };
+    }
   }
 
   private getExtension(fileName: string): string | undefined {
