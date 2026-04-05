@@ -13,7 +13,11 @@ export interface GoogleDriveFileDetail {
   id: string;
   name: string;
   modifiedDate: string;
+  modifiedTimeIso: string | null;
   parentIds: string[];
+  mimeType: string;
+  owners: string[];
+  driveId?: string;
 }
 
 export interface GoogleDriveCreateFileResult {
@@ -23,6 +27,11 @@ export interface GoogleDriveCreateFileResult {
 
 export interface GoogleDriveDeleteFileResult {
   errors: string[];
+}
+
+export interface GoogleDriveFolderFilterOptions {
+  includeMimeTypes?: string[];
+  excludeMimeTypes?: string[];
 }
 
 export class GoogleDriveRepository {
@@ -72,7 +81,7 @@ export class GoogleDriveRepository {
           pageToken,
           pageSize: 1000,
           q: "trashed = false",
-          fields: 'nextPageToken, files(id, name, modifiedTime, parents, mimeType)'
+          fields: 'nextPageToken, files(id, name, modifiedTime, parents, mimeType, owners(displayName,emailAddress), driveId)'
         });
 
         const files = res.data.files ?? [];
@@ -94,7 +103,11 @@ export class GoogleDriveRepository {
             id: file.id,
             name: file.name,
             modifiedDate: this.formatDate(file.modifiedTime ?? null),
-            parentIds: file.parents ?? []
+            modifiedTimeIso: this.formatDateTimeIso(file.modifiedTime ?? null),
+            parentIds: file.parents ?? [],
+            mimeType: file.mimeType ?? 'unknown',
+            owners: this.formatOwners(file.owners),
+            driveId: file.driveId ?? undefined
           };
         }
 
@@ -132,6 +145,159 @@ export class GoogleDriveRepository {
     }
 
     return nameMap;
+  }
+
+  public async getFileIdsByFolderIds(
+    folderIds: string[],
+    userId: string = 'me',
+    options: GoogleDriveFolderFilterOptions = {}
+  ): Promise<GoogleDriveFileIdsResult> {
+    const errors: string[] = [];
+    const normalizedFolderIds = folderIds
+      .filter((id) => typeof id === 'string' && id.trim() !== '')
+      .map((id) => (id === 'myDrive' ? 'root' : id.trim()));
+
+    if (normalizedFolderIds.length === 0) {
+      errors.push('No Google Drive folderIds provided for config-based coverage.');
+      return { ids: [], errors, fileDetailsById: {} };
+    }
+
+    const includeMimeTypes = Array.isArray(options.includeMimeTypes)
+      ? options.includeMimeTypes.filter((type) => typeof type === 'string' && type.trim() !== '')
+      : [];
+    const excludeMimeTypes = Array.isArray(options.excludeMimeTypes)
+      ? options.excludeMimeTypes.filter((type) => typeof type === 'string' && type.trim() !== '')
+      : [];
+    const applyExtensionFilter = includeMimeTypes.length === 0;
+
+    try {
+      const auth = await this.buildAuthClient();
+      const drive = google.drive({ version: 'v3', auth });
+
+      const ids: string[] = [];
+      const fileDetailsById: Record<string, GoogleDriveFileDetail> = {};
+
+      const queue = [...new Set(normalizedFolderIds)];
+      const visitedFolders = new Set<string>();
+
+      while (queue.length > 0) {
+        const parentId = queue.shift() as string;
+        if (visitedFolders.has(parentId)) {
+          continue;
+        }
+        visitedFolders.add(parentId);
+
+        let pageToken: string | undefined;
+        do {
+          const res = await drive.files.list({
+            pageToken,
+            pageSize: 1000,
+            q: `'${parentId}' in parents and trashed = false`,
+            fields: 'nextPageToken, files(id, name, modifiedTime, parents, mimeType, owners(displayName,emailAddress), driveId)',
+            supportsAllDrives: true,
+            includeItemsFromAllDrives: true
+          });
+
+          const files = res.data.files ?? [];
+          for (const file of files) {
+            if (!file.id || !file.name) {
+              continue;
+            }
+
+            if (file.mimeType === 'application/vnd.google-apps.folder') {
+              if (!visitedFolders.has(file.id)) {
+                queue.push(file.id);
+              }
+              continue;
+            }
+
+            if (includeMimeTypes.length > 0 && file.mimeType && !includeMimeTypes.includes(file.mimeType)) {
+              continue;
+            }
+            if (excludeMimeTypes.length > 0 && file.mimeType && excludeMimeTypes.includes(file.mimeType)) {
+              continue;
+            }
+
+            if (applyExtensionFilter) {
+              const ext = this.getExtension(file.name);
+              if (!ext || !this.allowedExtensions.has(ext)) {
+                continue;
+              }
+            }
+
+            ids.push(file.id);
+            fileDetailsById[file.id] = {
+              id: file.id,
+              name: file.name,
+              modifiedDate: this.formatDate(file.modifiedTime ?? null),
+              modifiedTimeIso: this.formatDateTimeIso(file.modifiedTime ?? null),
+              parentIds: file.parents ?? [],
+              mimeType: file.mimeType ?? 'unknown',
+              owners: this.formatOwners(file.owners),
+              driveId: file.driveId ?? undefined
+            };
+          }
+
+          pageToken = res.data.nextPageToken ?? undefined;
+        } while (pageToken);
+      }
+
+      return { ids, errors, fileDetailsById };
+    } catch (err) {
+      errors.push(
+        `Failed to fetch Google Drive file ids by folderIds: ${err instanceof Error ? err.message : String(err)}`
+      );
+      return { ids: [], errors, fileDetailsById: {} };
+    }
+  }
+
+  public async getFileDetailsByIds(
+    fileIds: string[],
+    userId: string = 'me'
+  ): Promise<{ detailsById: Record<string, GoogleDriveFileDetail>; errors: string[] }> {
+    const errors: string[] = [];
+    const detailsById: Record<string, GoogleDriveFileDetail> = {};
+
+    try {
+      const auth = await this.buildAuthClient();
+      const drive = google.drive({ version: 'v3', auth });
+
+      for (const fileId of fileIds) {
+        try {
+          const res = await drive.files.get({
+            fileId,
+            fields: 'id, name, modifiedTime, parents, mimeType, owners(displayName,emailAddress), driveId'
+          });
+
+          const file = res.data;
+          if (!file.id || !file.name) {
+            errors.push(`Google Drive file lookup returned missing id/name for ${fileId}.`);
+            continue;
+          }
+
+          detailsById[file.id] = {
+            id: file.id,
+            name: file.name,
+            modifiedDate: this.formatDate(file.modifiedTime ?? null),
+            modifiedTimeIso: this.formatDateTimeIso(file.modifiedTime ?? null),
+            parentIds: file.parents ?? [],
+            mimeType: file.mimeType ?? 'unknown',
+            owners: this.formatOwners(file.owners),
+            driveId: file.driveId ?? undefined
+          };
+        } catch (err) {
+          errors.push(
+            `Failed to fetch Google Drive file ${fileId}: ${err instanceof Error ? err.message : String(err)}`
+          );
+        }
+      }
+    } catch (err) {
+      errors.push(
+        `Failed to initialize Google Drive client: ${err instanceof Error ? err.message : String(err)}`
+      );
+    }
+
+    return { detailsById, errors };
   }
 
   public async createTextFile(
@@ -209,6 +375,33 @@ export class GoogleDriveRepository {
       return parsed.toISOString().slice(0, 10);
     }
     return raw;
+  }
+
+  private formatDateTimeIso(raw?: string | null): string | null {
+    if (!raw) {
+      return null;
+    }
+    const parsed = new Date(raw);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed.toISOString();
+    }
+    return raw;
+  }
+
+  private formatOwners(
+    owners?: Array<{ displayName?: string | null; emailAddress?: string | null }> | null
+  ): string[] {
+    if (!owners || owners.length === 0) {
+      return [];
+    }
+    return owners.map((owner) => {
+      const email = owner.emailAddress?.trim();
+      const name = owner.displayName?.trim();
+      if (email && name && email !== name) {
+        return `${name} <${email}>`;
+      }
+      return email || name || 'unknown';
+    });
   }
 
   private async buildAuthClient() {

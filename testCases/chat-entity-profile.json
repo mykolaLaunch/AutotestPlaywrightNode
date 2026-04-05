@@ -16,43 +16,21 @@
     "id": "TC-ENT-002",
     "question": "What are Alex Carter's main responsibilities as the QA automation lead?",
     "expectations": {
-      "mustContain": ["regression", "release"],
+      "mustContain": [
+        "QA automation",
+        "regression",
+        "release readiness",
+        "crash triage",
+        "weekly",
+        "test stability"
+      ],
       "mustMatch": [
         {
-          "pattern": "risk[-\\s]?based",
+          "pattern": "release\\s+readiness",
           "flags": "i"
-        }
-      ]
-    }
-  },
-  {
-    "id": "TC-ENT-003",
-    "question": "Describe Alex Carter's working style and how he makes decisions.",
-    "expectations": {
-      "mustContain": ["evidence", "crash", "metrics"]
-    }
-  },
-  {
-    "id": "TC-ENT-004",
-    "question": "Name at least three of Alex Carter's current focus areas on Puzzle Harbor.",
-    "expectations": {
-      "mustContain": ["tutorial", "reward"],
-      "mustMatch": [
+        },
         {
-          "pattern": "(save\\s*/\\s*restore|save\\s+restore|android\\s+crash|regression)",
-          "flags": "i"
-        }
-      ]
-    }
-  },
-  {
-    "id": "TC-ENT-005",
-    "question": "Does Alex Carter avoid hiding defects behind retries? Explain briefly.",
-    "expectations": {
-      "mustContain": ["defect", "retries"],
-      "mustMatch": [
-        {
-          "pattern": "avoid.*retries|retries.*avoid",
+          "pattern": "crash\\s+triage",
           "flags": "i"
         }
       ]

@@ -6,6 +6,14 @@ export interface DriveDbIngestionOrderRow {
   updatedUtcMs: number;
 }
 
+export interface DriveModifiedOrderRow {
+  id: number;
+  externalId: string;
+  modifiedTimeIso: string;
+  modifiedTimeMs: number;
+  name?: string;
+}
+
 export class GoogleDriveExternalIdValidator {
   public validateFileIdsPresentInDb(fileIds: string[], dbExternalIds: string[]): ValidationResult {
     const errors: string[] = [];
@@ -111,6 +119,86 @@ export class GoogleDriveExternalIdValidator {
     }
 
     this.logErrors('DB updated_utc/id order validation', errors);
+    return { errors };
+  }
+
+  public buildDriveModifiedOrderItems(
+    dbRows: Array<unknown>,
+    driveDetailsById: Record<
+      string,
+      { modifiedTimeIso: string | null; name?: string | null }
+    >
+  ): { items: DriveModifiedOrderRow[]; result: ValidationResult } {
+    const errors: string[] = [];
+    const items: DriveModifiedOrderRow[] = [];
+
+    for (const raw of dbRows) {
+      const row = raw as { id?: unknown; external_id?: unknown };
+      const id = this.parseIdToNumber(row.id);
+      if (id === null) {
+        errors.push('DB row has invalid id (expected finite number).');
+        continue;
+      }
+      if (typeof row.external_id !== 'string' || row.external_id.trim() === '') {
+        errors.push(`DB row has invalid external_id for id=${id}.`);
+        continue;
+      }
+
+      const detail = driveDetailsById[row.external_id];
+      if (!detail) {
+        errors.push(`Drive details missing for external_id=${row.external_id}.`);
+        continue;
+      }
+
+      const modifiedTimeMs = this.parseDateToMs(detail.modifiedTimeIso);
+      if (modifiedTimeMs === null) {
+        errors.push(`Drive detail has invalid modifiedTime for external_id=${row.external_id}.`);
+        continue;
+      }
+
+      items.push({
+        id,
+        externalId: row.external_id,
+        modifiedTimeIso: new Date(modifiedTimeMs).toISOString(),
+        modifiedTimeMs,
+        name: detail.name ?? undefined
+      });
+    }
+
+    this.logErrors('Drive modifiedTime + DB id validation', errors);
+    return { items, result: { errors } };
+  }
+
+  public validateDriveModifiedTimeIdOrder(
+    items: DriveModifiedOrderRow[],
+    minSamples: number = 5
+  ): ValidationResult {
+    const errors: string[] = [];
+
+    if (items.length < minSamples) {
+      errors.push(
+        `Not enough items to validate Drive modifiedTime/DB id order. Expected at least ${minSamples}, got ${items.length}.`
+      );
+      this.logErrors('Drive modifiedTime/DB id order validation', errors);
+      return { errors };
+    }
+
+    const sorted = items
+      .slice()
+      .sort((a, b) => a.modifiedTimeMs - b.modifiedTimeMs || a.id - b.id);
+
+    for (let i = 0; i < sorted.length - 1; i += 1) {
+      const current = sorted[i];
+      const next = sorted[i + 1];
+
+      if (current.modifiedTimeMs < next.modifiedTimeMs && current.id < next.id) {
+        errors.push(
+          `Order mismatch: modifiedTime ${current.modifiedTimeIso} (id=${current.id}, external_id=${current.externalId}) is earlier than ${next.modifiedTimeIso} (id=${next.id}, external_id=${next.externalId}), but id is smaller.`
+        );
+      }
+    }
+
+    this.logErrors('Drive modifiedTime/DB id order validation', errors);
     return { errors };
   }
 

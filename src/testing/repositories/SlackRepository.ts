@@ -11,6 +11,12 @@ export interface SlackMessageDetailsResult {
   errors: string[];
 }
 
+export interface SlackChannelMessagesResult {
+  channelId: string;
+  messages: SlackConversationMessage[];
+  errors: string[];
+}
+
 export interface SlackMessageDetail {
   id: string;
   ts: string;
@@ -30,6 +36,7 @@ export interface SlackConversationMessage {
   botId?: string;
   clientMsgId?: string;
   subtype?: string;
+  replyCount?: number;
 }
 
 export interface SlackSendMessagePayload {
@@ -69,6 +76,25 @@ interface SlackHistoryResponse {
     bot_id?: string;
     username?: string;
     subtype?: string;
+    reply_count?: number;
+  }>;
+  response_metadata?: {
+    next_cursor?: string;
+  };
+}
+
+interface SlackRepliesResponse {
+  ok: boolean;
+  error?: string;
+  messages?: Array<{
+    ts?: string;
+    thread_ts?: string;
+    text?: string;
+    user?: string;
+    client_msg_id?: string;
+    bot_id?: string;
+    username?: string;
+    subtype?: string;
   }>;
   response_metadata?: {
     next_cursor?: string;
@@ -88,6 +114,7 @@ interface SlackPostMessageResponse {
 export class SlackRepository {
   private readonly historyUrl = 'https://slack.com/api/conversations.history';
   private readonly postMessageUrl = 'https://slack.com/api/chat.postMessage';
+  private readonly repliesUrl = 'https://slack.com/api/conversations.replies';
 
   public async getAllMessageIds(channelId: string): Promise<SlackMessageIdsResult> {
     const errors: string[] = [];
@@ -175,7 +202,8 @@ export class SlackRepository {
             username: msg.username,
             botId: msg.bot_id,
             clientMsgId: msg.client_msg_id,
-            subtype: msg.subtype
+            subtype: msg.subtype,
+            replyCount: msg.reply_count
           });
         }
 
@@ -190,6 +218,54 @@ export class SlackRepository {
       );
       return { messages: [], errors };
     }
+  }
+
+  public async getAllMessagesWithThreads(
+    channelId: string,
+    includeThreads: boolean
+  ): Promise<SlackMessageDetailsResult> {
+    const baseResult = await this.getAllMessages(channelId);
+    if (!includeThreads || baseResult.messages.length === 0) {
+      return baseResult;
+    }
+
+    const errors: string[] = [...baseResult.errors];
+    const messages = [...baseResult.messages];
+    const seen = new Set(messages.map((msg) => msg.ts));
+
+    const threadsToFetch = baseResult.messages
+      .filter((msg) => (msg.replyCount ?? 0) > 0)
+      .map((msg) => msg.threadTs);
+
+    for (const threadTs of threadsToFetch) {
+      const threadResult = await this.getThreadReplies(channelId, threadTs);
+      errors.push(...threadResult.errors);
+      for (const msg of threadResult.messages) {
+        if (!msg.ts || seen.has(msg.ts)) {
+          continue;
+        }
+        seen.add(msg.ts);
+        messages.push(msg);
+      }
+    }
+
+    return { messages, errors };
+  }
+
+  public async getMessagesForChannels(
+    channelIds: string[],
+    options?: { includeThreads?: boolean }
+  ): Promise<SlackChannelMessagesResult[]> {
+    const results: SlackChannelMessagesResult[] = [];
+    const uniqueIds = [...new Set(channelIds.map((id) => id.trim()).filter((id) => id !== ''))];
+    const includeThreads = options?.includeThreads ?? false;
+
+    for (const channelId of uniqueIds) {
+      const { messages, errors } = await this.getAllMessagesWithThreads(channelId, includeThreads);
+      results.push({ channelId, messages, errors });
+    }
+
+    return results;
   }
 
   public async sendMessage(payload: SlackSendMessagePayload): Promise<SlackSendMessageResult> {
@@ -362,6 +438,96 @@ export class SlackRepository {
 
     return (await res.json()) as SlackHistoryResponse;
   }
+
+  private async fetchRepliesPage(
+    token: string,
+    channelId: string,
+    threadTs: string,
+    cursor?: string
+  ): Promise<SlackRepliesResponse> {
+    const params = new URLSearchParams({
+      channel: channelId,
+      ts: threadTs,
+      limit: '200'
+    });
+    if (cursor) {
+      params.set('cursor', cursor);
+    }
+
+    const res = await fetch(this.repliesUrl, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      body: params.toString()
+    });
+
+    if (!res.ok) {
+      return {
+        ok: false,
+        error: `http_${res.status}`
+      };
+    }
+
+    return (await res.json()) as SlackRepliesResponse;
+  }
+
+  private async getThreadReplies(
+    channelId: string,
+    threadTs: string
+  ): Promise<SlackMessageDetailsResult> {
+    const errors: string[] = [];
+    const messages: SlackConversationMessage[] = [];
+
+    try {
+      const token = this.getAuthToken();
+      if (!channelId || channelId.trim() === '') {
+        throw new Error('Slack channel id is required.');
+      }
+      if (!threadTs || threadTs.trim() === '') {
+        throw new Error('Slack thread ts is required.');
+      }
+
+      let cursor: string | undefined;
+      do {
+        const res = await this.fetchRepliesPage(token, channelId, threadTs, cursor);
+        if (!res.ok) {
+          errors.push(`Slack API error: ${res.error ?? 'unknown_error'}`);
+          break;
+        }
+
+        const pageMessages = res.messages ?? [];
+        for (const msg of pageMessages) {
+          if (!msg.ts) {
+            continue;
+          }
+          const thread = msg.thread_ts ?? threadTs;
+          messages.push({
+            ts: msg.ts,
+            threadTs: thread,
+            text: msg.text ?? '(no text)',
+            user: msg.user,
+            username: msg.username,
+            botId: msg.bot_id,
+            clientMsgId: msg.client_msg_id,
+            subtype: msg.subtype
+          });
+        }
+
+        const next = res.response_metadata?.next_cursor ?? '';
+        cursor = next.trim() === '' ? undefined : next.trim();
+      } while (cursor);
+
+      return { messages, errors };
+    } catch (err) {
+      errors.push(
+        `Failed to fetch Slack thread replies: ${err instanceof Error ? err.message : String(err)}`
+      );
+      return { messages: [], errors };
+    }
+  }
+
 
   private formatSlackTs(ts: string): string {
     const ms = this.parseSlackTsToMs(ts);

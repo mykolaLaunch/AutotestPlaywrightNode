@@ -1,0 +1,88 @@
+---
+
+# Google Drive coverage without config-based (English)
+
+This document describes the `Google Drive coverage without config-based` test and its checks.
+
+## Purpose
+
+Validate ingestion coverage for Google Drive: every file returned by the Drive API (after repository filters) must exist in `raw.raw_item` as `external_id` for source `google-drive` and account `mykola@launchnyc.io`.
+
+## Where the test lives
+
+- Test: `tests/api/google_drive_tests.spec.ts` (case `Google Drive coverage without config-based`).
+- Drive API repository: `src/testing/repositories/GoogleDriveRepository.ts`.
+- DB repository: `src/db/repositories/RawItemRepository.ts`.
+- Validator: `src/testing/validators/GoogleDriveExternalIdValidator.ts`.
+
+## Inputs and sources
+
+1) Google Drive API (via `GoogleDriveRepository.getAllFileIds('me')`)
+- Uses OAuth token from `secrets/token.json` and client from `secrets/google-oauth-client.json`.
+- Request: `drive.files.list` with `q="trashed = false"`.
+- Fields: `id`, `name`, `modifiedTime`, `parents`, `mimeType`, `owners`, `driveId`.
+- Filters in the test repository:
+  - Folders are excluded (`mimeType = application/vnd.google-apps.folder`).
+  - Only files with extensions in the allow-list are kept (pdf/doc/docx/xls/xlsx/ppt/pptx/txt/log/csv/json/xml/yml/yaml/html/md).
+- Outputs:
+  - `driveResult.ids`: list of filtered file ids.
+  - `driveResult.fileDetailsById`: metadata map per id (name, date, parents, mimeType, owners, driveId).
+
+2) Database (via `RawItemRepository.getBySourceAndAccount`)
+- Query: `raw.raw_item` filtered by `source = 'google-drive'` and `source_account = 'mykola@launchnyc.io'`.
+- Output: `dbRows`, then `external_id` values are extracted.
+
+## Comparison logic
+
+1) DB external_id validation
+- The validator checks that `external_id` is valid (non-empty / non-null) and builds `externalIds`.
+
+2) Coverage comparison
+- `driveResult.ids` are compared to `dbExternalIdResult.externalIds`.
+- Missing DB ids are computed as `missingIds = driveResult.ids - dbExternalIds`.
+
+3) Missing details (missingIds)
+- The first 10 `missingIds` are expanded for logging.
+- For those ids, the test resolves:
+  - parent folder names via `resolveParentNames`.
+  - metadata from `driveResult.fileDetailsById` (name, date, mimeType, owners, driveId).
+- Additionally, direct lookup requests are executed:
+  - `GoogleDriveRepository.getFileDetailsByIds(preview, 'me')` (Drive `files.get` per id).
+  - Logs include `id`, `name`, `modifiedDate`, `mimeType`, `owners`, `parents`, `driveId`.
+  - If not found, it logs `NOT FOUND`.
+
+## Errors and discrepancy handling
+
+- All errors are aggregated into `errors`:
+  - Drive API errors (`driveResult.errors`),
+  - DB external_id validation errors,
+  - coverage errors (missing ids),
+  - parent folder resolve errors,
+  - `files.get` lookup errors.
+- If `errors.length > 0`, the test logs details to stdout and fails:
+  - `expect(errors, errors.join('\n')).toHaveLength(0)`.
+
+## What a failure means
+
+1) `missingIds` is not empty
+- Files visible via Drive API (after filtering) are expected to be ingested, but are missing from DB.
+- The log prints up to 10 missing entries with folder/date/name/type/owners and the `files.get` lookup result.
+
+2) DB external_id errors
+- DB contains rows with invalid `external_id` (null/empty).
+
+3) Drive API errors
+- Authorization issues, Drive API unavailability, or per-file `files.get` errors.
+
+## Output logs
+
+The test writes to stdout:
+- count of Drive ids and DB rows,
+- missing files list (up to 10) with details and folder names,
+- `files.get` lookup results for missing ids.
+
+## Important notes
+
+- Coverage is checked against what the Drive API returns after repository filters, not all files in the account.
+- If connector ingestion is limited by config/scope, `missingIds` are expected and the test will fail.
+- In this project, `source_account` is fixed to `mykola@launchnyc.io`.

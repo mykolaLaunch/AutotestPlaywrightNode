@@ -3,9 +3,10 @@ import { RawItemRepository } from '../../src/db/repositories/RawItemRepository';
 import {GmailRepository} from "../../src/testing/repositories/GmailRepository";
 import { GmailExternalIdValidator } from '../../src/testing/validators/GmailExternalIdValidator';
 import { loadEnvOnce } from '../../src/testing/utils/envLoader';
+import { AdminInstancesRepository } from '../../src/api/repositories/AdminInstancesRepository';
 
 test.describe('Gmail tests', { tag: ['@gmail', '@regression'] }, () => {
-  test('Gmail external_id coverage for mykola@launchnyc.io', async () => {
+  test.skip('Gmail external_id coverage for mykola@launchnyc.io', async () => {
     console.info('--- Gmail coverage test start');
     console.info('Action: fetch Gmail message ids and compare to raw_item external_id.');
     const gmailRepository = new GmailRepository();
@@ -67,8 +68,160 @@ test.describe('Gmail tests', { tag: ['@gmail', '@regression'] }, () => {
     console.info('--- Gmail coverage test end');
   });
 
+  test('Gmail config-based external_id coverage v2 for mykola@launchnyc.io', async ({ request }) => {
+    console.info('--- Gmail coverage v2 test start');
+    console.info('Action: load Gmail instance settings and compare filtered Gmail ids to raw_item external_id.');
+    loadEnvOnce();
+
+    const gmailRepository = new GmailRepository();
+    const rawItemRepository = new RawItemRepository();
+    const validator = new GmailExternalIdValidator();
+
+    const apiBaseUrl = process.env.API_BASE_URL ?? 'https://localhost:5199';
+    const adminInstancesRepository = new AdminInstancesRepository(request, apiBaseUrl);
+
+    const errors: string[] = [];
+
+    const targetEmail = 'mykola@launchnyc.io';
+    const gmailSettingsResult = await adminInstancesRepository.getGmailSettingsForUserEmail(targetEmail);
+    errors.push(...gmailSettingsResult.errors);
+    const accountSettings = (gmailSettingsResult.settings?.account as Record<string, unknown> | undefined) ?? {};
+    const labelIds = Array.isArray(accountSettings.labelIds)
+      ? accountSettings.labelIds.filter((label) => typeof label === 'string') as string[]
+      : [];
+    const backfillDaysRaw = accountSettings.backfillDays;
+    const backfillDays = typeof backfillDaysRaw === 'number' ? backfillDaysRaw : Number(backfillDaysRaw);
+    const hasBackfillDays = Number.isFinite(backfillDays) && backfillDays > 0;
+
+    console.info(`Using Gmail settings from instance id=${gmailSettingsResult.instance?.id ?? 'unknown'}`);
+    console.info(`labelIds: ${labelIds.length > 0 ? labelIds.join(', ') : '(none)'}`);
+    console.info(`backfillDays: ${hasBackfillDays ? backfillDays : '(none)'}`);
+
+    const gmailResult = await gmailRepository.getMessageIdsByLabelsAndBackfill(
+      'me',
+      labelIds,
+      hasBackfillDays ? backfillDays : undefined
+    );
+    console.info(`Filtered Gmail message ids fetched: ${gmailResult.ids.length}`);
+
+    const dbRows = await rawItemRepository.getBySourceAndAccount('gmail', targetEmail);
+    console.info(`DB raw_item rows fetched: ${dbRows.length}`);
+
+    const rawExternalIds = dbRows.map((row) => (row as { external_id?: unknown }).external_id);
+    const dbExternalIdResult = validator.validateDbExternalIds(rawExternalIds);
+    const dbSet = new Set(dbExternalIdResult.externalIds);
+    const gmailSet = new Set(gmailResult.ids);
+
+    const coverageResult = validator.validateGmailIdsPresentInDb(
+      gmailResult.ids,
+      dbExternalIdResult.externalIds
+    );
+
+    const missingIds = gmailResult.ids.filter((id) => !dbSet.has(id));
+    const missingDetailsErrors: string[] = [];
+
+    if (missingIds.length > 0) {
+      console.info(`Missing Gmail messages in DB: ${missingIds.length}`);
+      const detailsResult = await gmailRepository.getMessageDetails('me', missingIds, 10);
+      missingDetailsErrors.push(...detailsResult.errors);
+
+      if (detailsResult.details.length > 0) {
+        const lines = detailsResult.details.map((detail) => {
+          const folderLabels = new Set(['INBOX', 'SENT', 'DRAFT', 'TRASH', 'SPAM', 'IMPORTANT', 'STARRED']);
+          const categoryPrefix = 'CATEGORY_';
+
+          const folders = detail.labelNames.filter((label) => folderLabels.has(label));
+          const categories = detail.labelNames.filter((label) => label.startsWith(categoryPrefix));
+
+          const folderText = folders.length > 0 ? folders.join(', ') : '(no folder)';
+          const categoryText = categories.length > 0 ? categories.join(', ') : '(no category)';
+
+          return `- folder=${folderText} | category=${categoryText} | ${detail.date} | ${detail.subject}`;
+        });
+        missingDetailsErrors.push(
+          `Missing Gmail messages (showing up to 10):\n${lines.join('\n')}`
+        );
+      }
+    }
+
+    const extraIds = dbExternalIdResult.externalIds.filter((id) => !gmailSet.has(id));
+    const extraDetailsErrors: string[] = [];
+
+    if (extraIds.length > 0) {
+      console.info(`Extra Gmail messages in DB (not in filtered Gmail API results): ${extraIds.length}`);
+      const sampleIds = extraIds.slice(0, 50);
+      const detailsResult = await gmailRepository.getMessageDetails('me', sampleIds, 50);
+      const dateInfoResult = await gmailRepository.getMessageDateInfos('me', sampleIds, 50);
+
+      extraDetailsErrors.push(...detailsResult.errors);
+      extraDetailsErrors.push(...dateInfoResult.errors);
+
+      const detailsMap = new Map(detailsResult.details.map((detail) => [detail.id, detail]));
+      const dateInfoMap = new Map(dateInfoResult.items.map((info) => [info.id, info]));
+
+      const cutoffMs =
+        hasBackfillDays ? Date.now() - Math.floor(backfillDays) * 24 * 60 * 60 * 1000 : null;
+      const cutoffIso = cutoffMs ? new Date(cutoffMs).toISOString().slice(0, 10) : null;
+
+      let folderMismatches = 0;
+      let dateMismatches = 0;
+      let unknownMismatches = 0;
+
+      const lines = sampleIds.map((id) => {
+        const detail = detailsMap.get(id);
+        const dateInfo = dateInfoMap.get(id);
+        const labels = detail?.labelNames ?? [];
+        const labelOk = labelIds.length === 0 ? true : labels.some((label) => labelIds.includes(label));
+        const dateMs = dateInfo?.dateEpochMs;
+        const dateOk =
+          cutoffMs === null ? true : (typeof dateMs === 'number' ? dateMs >= cutoffMs : null);
+
+        const reasons: string[] = [];
+        if (labelOk === false) {
+          reasons.push('folder');
+          folderMismatches += 1;
+        }
+        if (dateOk === false) {
+          reasons.push('date');
+          dateMismatches += 1;
+        }
+        if (reasons.length === 0) {
+          reasons.push('unknown');
+          unknownMismatches += 1;
+        }
+
+        const labelText = labels.length > 0 ? labels.join(', ') : '(no labels)';
+        const subjectText = detail?.subject?.trim() ? detail.subject : '(no subject)';
+        const dateText = dateInfo?.dateIso ? dateInfo.dateIso.slice(0, 10) : detail?.date ?? 'unknown date';
+        const cutoffText = cutoffIso ? ` (cutoff ${cutoffIso})` : '';
+        return `- ${id} | subject=${subjectText} | labels=${labelText} | date=${dateText}${cutoffText} | reason=${reasons.join(', ')}`;
+      });
+
+      console.info(`Extra Gmail mismatch reasons (sample up to 50): folder=${folderMismatches}, date=${dateMismatches}, unknown=${unknownMismatches}`);
+      extraDetailsErrors.push(
+        `Extra Gmail messages (showing up to 50) with mismatch reasons:\n${lines.join('\n')}`
+      );
+    }
+
+    errors.push(
+      ...gmailResult.errors,
+      ...dbExternalIdResult.result.errors,
+      ...coverageResult.errors,
+      ...missingDetailsErrors,
+      ...extraDetailsErrors
+    );
+
+    if (errors.length > 0) {
+      console.info(`Validation errors: ${errors.length}`);
+      console.info(errors.join('\n'));
+    }
+
+    expect(errors, errors.join('\n')).toHaveLength(0);
+    console.info('--- Gmail coverage v2 test end');
+  });
+
   test(
-    'Gmail duplicates test for mykola@launchnyc.io',
+    'Gmail duplicates ',
     { tag: ['@check-duplicates'] },
     async () => {
     console.info('--- Gmail duplicates test start');
@@ -108,7 +261,7 @@ test.describe('Gmail tests', { tag: ['@gmail', '@regression'] }, () => {
 
   // Checks that as created_utc increases, id does not increase (adjacent-pair order check on DB sample).
   test(
-    'Gmail ingestion order by created_utc vs id for mykola@launchnyc.io',
+    'Gmail order by created_utc',
     { tag: ['@order-test'] },
     async () => {
     console.info('--- Gmail ingestion order test start');
@@ -144,7 +297,7 @@ test.describe('Gmail tests', { tag: ['@gmail', '@regression'] }, () => {
   );
 
   test(
-    'Send Gmail message and verify raw_item ingestion by external_id',
+    'Gmail catch new message',
     { tag: ['@gmail', '@dynamic', '@new-object-load'] },
     async () => {
       console.info('--- Gmail dynamic ingestion test start');

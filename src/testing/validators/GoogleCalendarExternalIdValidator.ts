@@ -6,6 +6,14 @@ export interface CalendarDbIngestionOrderRow {
   updatedUtcMs: number;
 }
 
+export interface CalendarUpdatedOrderRow {
+  id: number;
+  externalId: string;
+  updatedTimeIso: string;
+  updatedTimeMs: number;
+  summary?: string;
+}
+
 export class GoogleCalendarExternalIdValidator {
   public validateEventIdsPresentInDb(eventIds: string[], dbExternalIds: string[]): ValidationResult {
     const errors: string[] = [];
@@ -111,6 +119,86 @@ export class GoogleCalendarExternalIdValidator {
     }
 
     this.logErrors('DB updated_utc/id order validation', errors);
+    return { errors };
+  }
+
+  public buildCalendarUpdatedOrderItems(
+    dbRows: Array<unknown>,
+    calendarDetailsById: Record<
+      string,
+      { updatedIso: string | null; summary?: string | null }
+    >
+  ): { items: CalendarUpdatedOrderRow[]; result: ValidationResult } {
+    const errors: string[] = [];
+    const items: CalendarUpdatedOrderRow[] = [];
+
+    for (const raw of dbRows) {
+      const row = raw as { id?: unknown; external_id?: unknown };
+      const id = this.parseIdToNumber(row.id);
+      if (id === null) {
+        errors.push('DB row has invalid id (expected finite number).');
+        continue;
+      }
+      if (typeof row.external_id !== 'string' || row.external_id.trim() === '') {
+        errors.push(`DB row has invalid external_id for id=${id}.`);
+        continue;
+      }
+
+      const detail = calendarDetailsById[row.external_id];
+      if (!detail) {
+        errors.push(`Calendar details missing for external_id=${row.external_id}.`);
+        continue;
+      }
+
+      const updatedMs = this.parseDateToMs(detail.updatedIso);
+      if (updatedMs === null) {
+        errors.push(`Calendar detail has invalid updated time for external_id=${row.external_id}.`);
+        continue;
+      }
+
+      items.push({
+        id,
+        externalId: row.external_id,
+        updatedTimeIso: new Date(updatedMs).toISOString(),
+        updatedTimeMs: updatedMs,
+        summary: detail.summary ?? undefined
+      });
+    }
+
+    this.logErrors('Calendar updated time + DB id validation', errors);
+    return { items, result: { errors } };
+  }
+
+  public validateCalendarUpdatedTimeIdOrder(
+    items: CalendarUpdatedOrderRow[],
+    minSamples: number = 5
+  ): ValidationResult {
+    const errors: string[] = [];
+
+    if (items.length < minSamples) {
+      errors.push(
+        `Not enough items to validate Calendar updatedTime/DB id order. Expected at least ${minSamples}, got ${items.length}.`
+      );
+      this.logErrors('Calendar updatedTime/DB id order validation', errors);
+      return { errors };
+    }
+
+    const sorted = items
+      .slice()
+      .sort((a, b) => a.updatedTimeMs - b.updatedTimeMs || a.id - b.id);
+
+    for (let i = 0; i < sorted.length - 1; i += 1) {
+      const current = sorted[i];
+      const next = sorted[i + 1];
+
+      if (current.updatedTimeMs < next.updatedTimeMs && current.id < next.id) {
+        errors.push(
+          `Order mismatch: updatedTime ${current.updatedTimeIso} (id=${current.id}, external_id=${current.externalId}) is earlier than ${next.updatedTimeIso} (id=${next.id}, external_id=${next.externalId}), but id is smaller.`
+        );
+      }
+    }
+
+    this.logErrors('Calendar updatedTime/DB id order validation', errors);
     return { errors };
   }
 

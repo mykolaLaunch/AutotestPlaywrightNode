@@ -74,37 +74,38 @@ Verify that, for Google Drive raw items in the database, later `updated_utc` tim
 **Why adjacent pairs are enough**
 If any later `updated_utc` has a smaller `id` than an earlier one, the inversion will appear between some adjacent pair in the list sorted by `updated_utc`.
 
-## Calendar ingestion order by updated_utc vs id for mykola@launchnyc.io
+## Calendar ingestion order by updated time vs id for mykola@launchnyc.io
 
 **Spec:** `tests/api/google_calendar_tests.spec.ts`
 
 **Purpose**
-Verify that, for Google Calendar raw items in the database, later `updated_utc` timestamps do not correspond to smaller `id` values. In other words, as `updated_utc` increases, `id` should not decrease within the sampled dataset.
+Verify that, for Google Calendar raw items in the database, later Calendar `updated` timestamps (from the Calendar API) correspond to smaller `id` values. In other words, as Calendar updated time increases, `id` should decrease within the matched dataset.
 
 **Data source**
-`raw.raw_item` filtered by:
-- `source = google-calendar`
-- `source_account = mykola@launchnyc.io`
+- `raw.raw_item` filtered by:
+  - `source = google-calendar`
+  - `source_account = mykola@launchnyc.io`
+- Calendar API events list for configured calendars (`/admin/instances`), with `singleEvents=true` and optional `backfillDays` filter.
 
 **Sampling**
-- Up to 1000 rows are loaded (ordered by `created_utc` descending in the query).
-- A minimum of 5 valid rows is required to run the ordering check.
+- All DB rows for the account are loaded; only rows with Calendar API details are used.
+- A minimum of 5 matched rows is required to run the ordering check.
 
 **Validation steps**
 1. **Row parsing**
-   - `id` is accepted as a number or a numeric string and converted to `number`.
-   - `updated_utc` is parsed from `Date`, ISO string, or epoch (seconds/milliseconds).
-   - Rows with invalid `id` or `updated_utc` are collected as errors.
+  - `id` is accepted as a number or a numeric string and converted to `number`.
+   - Calendar `updated` is parsed from the API response.
+   - Rows with invalid `id` or missing Calendar details are collected as errors.
 
 2. **Order check (pair chain)**
-   - Valid rows are sorted by `updated_utc` ascending (earlier → later), with `id` as a tie-breaker.
+   - Valid rows are sorted by Calendar `updated` ascending (earlier → later), with `id` as a tie-breaker.
    - Each adjacent pair is compared:
-     - If `updated_utc(A) < updated_utc(B)` but `id(A) > id(B)`, this is a violation.
+     - If `updated(A) < updated(B)` but `id(A) < id(B)`, this is a violation.
    - Any violations are reported with the concrete timestamps and ids.
 
 **Fail conditions**
 - Not enough valid rows (less than 5).
-- Any row has invalid `id` or `updated_utc`.
+- Any row has invalid `id` or missing Calendar `updated`.
 - Any detected order violation in the adjacent-pair chain.
 
 **Why adjacent pairs are enough**

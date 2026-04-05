@@ -3,9 +3,10 @@ import { GoogleCalendarRepository } from '../../src/testing/repositories/GoogleC
 import { RawItemRepository } from '../../src/db/repositories/RawItemRepository';
 import { GoogleCalendarExternalIdValidator } from '../../src/testing/validators/GoogleCalendarExternalIdValidator';
 import { loadEnvOnce } from '../../src/testing/utils/envLoader';
+import { AdminInstancesRepository } from '../../src/api/repositories/AdminInstancesRepository';
 
 test.describe('Google Calendar tests', { tag: ['@google-calendar', '@regression'] }, () => {
-  test('Calendar external_id coverage for mykola@launchnyc.io', async () => {
+  test.skip('Calendar coverage for not config-based', async () => {
     console.info('--- Google Calendar coverage test start');
     console.info('Action: fetch Calendar event ids and compare to raw_item external_id.');
     const calendarRepository = new GoogleCalendarRepository();
@@ -62,8 +63,120 @@ test.describe('Google Calendar tests', { tag: ['@google-calendar', '@regression'
     console.info('--- Google Calendar coverage test end');
   });
 
+  test('Calendar config-based external_id coverage for mykola@launchnyc.io', async ({ request }) => {
+    console.info('--- Calendar coverage (config-based) test start');
+    console.info('Action: load Calendar instance settings and compare filtered event ids to raw_item external_id.');
+    loadEnvOnce();
+
+    const calendarRepository = new GoogleCalendarRepository();
+    const rawItemRepository = new RawItemRepository();
+    const validator = new GoogleCalendarExternalIdValidator();
+
+    const apiBaseUrl = process.env.API_BASE_URL ?? 'https://localhost:5199';
+    const adminInstancesRepository = new AdminInstancesRepository(request, apiBaseUrl);
+
+    const errors: string[] = [];
+    const targetEmail = 'mykola@launchnyc.io';
+    const calendarSettingsResult = await adminInstancesRepository.getGoogleCalendarSettingsForUserEmail(targetEmail);
+    errors.push(...calendarSettingsResult.errors);
+
+    const settings = (calendarSettingsResult.settings ?? {}) as Record<string, unknown>;
+    const calendarIds = Array.isArray(settings.calendarIds)
+      ? settings.calendarIds.filter((id): id is string => typeof id === 'string' && id.trim() !== '')
+      : [];
+    const backfillDaysRaw = settings.backfillDays;
+    const backfillDays = typeof backfillDaysRaw === 'number' ? backfillDaysRaw : Number(backfillDaysRaw);
+    const hasBackfillDays = Number.isFinite(backfillDays) && backfillDays > 0;
+
+    console.info(`Using Google Calendar settings from instance id=${calendarSettingsResult.instance?.id ?? 'unknown'}`);
+    console.info(`calendarIds: ${calendarIds.length > 0 ? calendarIds.join(', ') : '(none)'}`);
+    console.info(`backfillDays: ${hasBackfillDays ? backfillDays : '(none)'}`);
+
+    if (calendarIds.length === 0) {
+      errors.push('Google Calendar instance settings did not include calendarIds.');
+    }
+
+    const calendarResult = await calendarRepository.getEventIdsByCalendarIds(
+      calendarIds,
+      hasBackfillDays ? backfillDays : undefined
+    );
+    console.info(`Filtered Calendar event ids fetched: ${calendarResult.ids.length}`);
+
+    const dbRows = await rawItemRepository.getBySourceAndAccount('google-calendar', targetEmail);
+    console.info(`DB raw_item rows fetched: ${dbRows.length}`);
+
+    const rawExternalIds = dbRows.map((row) => (row as { external_id?: unknown }).external_id);
+    const dbExternalIdResult = validator.validateDbExternalIds(rawExternalIds);
+    const dbSet = new Set(dbExternalIdResult.externalIds);
+    const calendarSet = new Set(calendarResult.ids);
+
+    const coverageResult = validator.validateEventIdsPresentInDb(
+      calendarResult.ids,
+      dbExternalIdResult.externalIds
+    );
+
+    const missingIds = calendarResult.ids.filter((id) => !dbSet.has(id));
+    const missingDetailsErrors: string[] = [];
+
+    if (missingIds.length > 0) {
+      const preview = missingIds.slice(0, 10);
+      const lines = preview.map((id) => {
+        const detail = calendarResult.eventDetailsById[id];
+        if (!detail) {
+          return `- (unknown calendar) | unknown date | (unknown title)`;
+        }
+        const calendarName = detail.calendarName ?? detail.calendarId;
+        return `- ${calendarName} | ${detail.date} | ${detail.summary}`;
+      });
+      missingDetailsErrors.push(
+        `Missing Google Calendar events (showing up to 10):\n${lines.join('\n')}`
+      );
+    }
+
+    const extraIds = dbExternalIdResult.externalIds.filter((id) => !calendarSet.has(id));
+    const extraDetailsErrors: string[] = [];
+
+    if (extraIds.length > 0) {
+      console.info(`Extra Calendar events in DB (not in configured Calendar results): ${extraIds.length}`);
+      const sampleIds = extraIds.slice(0, 50);
+      const lookupResult = await calendarRepository.getEventDetailsByIdsAcrossCalendars(
+        calendarIds,
+        sampleIds
+      );
+      extraDetailsErrors.push(...lookupResult.errors);
+
+      const lines = sampleIds.map((id) => {
+        const detail = lookupResult.detailsById[id];
+        if (!detail) {
+          return `- ${id} | NOT FOUND`;
+        }
+        const calendarName = detail.calendarName ?? detail.calendarId;
+        return `- ${id} | ${calendarName} | ${detail.date} | ${detail.summary}`;
+      });
+
+      extraDetailsErrors.push(
+        `Extra Google Calendar events (showing up to 50):\n${lines.join('\n')}`
+      );
+    }
+
+    errors.push(
+      ...calendarResult.errors,
+      ...dbExternalIdResult.result.errors,
+      ...coverageResult.errors,
+      ...missingDetailsErrors,
+      ...extraDetailsErrors
+    );
+
+    if (errors.length > 0) {
+      console.info(`Validation errors: ${errors.length}`);
+      console.info(errors.join('\n'));
+    }
+    expect(errors, errors.join('\n')).toHaveLength(0);
+    console.info('--- Calendar coverage (config-based) test end');
+  });
+
   test(
-    'Calendar duplicates test for mykola@launchnyc.io',
+    'Calendar duplicates',
     { tag: ['@check-duplicates'] },
     async () => {
     console.info('--- Google Calendar duplicates test start');
@@ -103,28 +216,57 @@ test.describe('Google Calendar tests', { tag: ['@google-calendar', '@regression'
 
   // Checks that as updated_utc increases, id does not decrease (adjacent-pair order check on DB sample).
   test(
-    'Calendar ingestion order by updated_utc vs id for mykola@launchnyc.io',
+    'Calendar order by updated_time',
     { tag: ['@order-test'] },
-    async () => {
+    async ({ request }) => {
     console.info('--- Google Calendar ingestion order test start');
-    console.info('Action: validate updated_utc increases with id on DB sample.');
+    console.info('Action: validate Calendar updated time increases while DB id decreases.');
+    loadEnvOnce();
     const rawItemRepository = new RawItemRepository();
+    const calendarRepository = new GoogleCalendarRepository();
     const validator = new GoogleCalendarExternalIdValidator();
+    const apiBaseUrl = process.env.API_BASE_URL ?? 'https://localhost:5199';
+    const adminInstancesRepository = new AdminInstancesRepository(request, apiBaseUrl);
 
-    const sampleLimit = 1000;
     const minSamples = 5;
 
-    const dbRows = await rawItemRepository.getBySourceAndAccountLimited(
-      'google-calendar',
-      'mykola@launchnyc.io',
-      sampleLimit
+    const targetEmail = 'mykola@launchnyc.io';
+    const calendarSettingsResult = await adminInstancesRepository.getGoogleCalendarSettingsForUserEmail(targetEmail);
+    const settings = (calendarSettingsResult.settings ?? {}) as Record<string, unknown>;
+    const calendarIds = Array.isArray(settings.calendarIds)
+      ? settings.calendarIds.filter((id): id is string => typeof id === 'string' && id.trim() !== '')
+      : [];
+    const backfillDaysRaw = settings.backfillDays;
+    const backfillDays = typeof backfillDaysRaw === 'number' ? backfillDaysRaw : Number(backfillDaysRaw);
+    const hasBackfillDays = Number.isFinite(backfillDays) && backfillDays > 0;
+
+    console.info(`Calendar instance id: ${calendarSettingsResult.instance?.id ?? 'unknown'}`);
+    console.info(`calendarIds: ${calendarIds.length > 0 ? calendarIds.join(', ') : '(none)'}`);
+    console.info(`backfillDays: ${hasBackfillDays ? backfillDays : '(none)'}`);
+
+    const calendarResult = await calendarRepository.getEventIdsByCalendarIds(
+      calendarIds,
+      hasBackfillDays ? backfillDays : undefined
     );
+    console.info(`Filtered Calendar event ids fetched: ${calendarResult.ids.length}`);
+
+    const dbRows = await rawItemRepository.getBySourceAndAccount('google-calendar', targetEmail);
     console.info(`DB raw_item rows fetched: ${dbRows.length}`);
 
-    const dbOrderResult = validator.validateDbRowsForUpdatedUtcAndId(dbRows);
-    const orderResult = validator.validateUpdatedUtcIdOrder(dbOrderResult.items, minSamples);
+    const detailsById = calendarResult.eventDetailsById;
+    const detailIds = new Set(Object.keys(detailsById));
+    const filteredDbRows = dbRows.filter((row) => {
+      const externalId = (row as { external_id?: unknown }).external_id;
+      return typeof externalId === 'string' && detailIds.has(externalId);
+    });
+    console.info(`DB rows with Calendar details: ${filteredDbRows.length}`);
+
+    const dbOrderResult = validator.buildCalendarUpdatedOrderItems(filteredDbRows, detailsById);
+    const orderResult = validator.validateCalendarUpdatedTimeIdOrder(dbOrderResult.items, minSamples);
 
     const errors = [
+      ...calendarSettingsResult.errors,
+      ...calendarResult.errors,
       ...dbOrderResult.result.errors,
       ...orderResult.errors
     ];
@@ -139,7 +281,7 @@ test.describe('Google Calendar tests', { tag: ['@google-calendar', '@regression'
   );
 
   test(
-    'Send Calendar event and verify raw_item ingestion by external_id',
+    'Catch new Calendar event',
     { tag: ['@google-calendar', '@dynamic', '@new-object-load'] },
     async () => {
       console.info('--- Google Calendar dynamic ingestion test start');

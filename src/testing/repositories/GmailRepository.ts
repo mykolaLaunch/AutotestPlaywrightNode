@@ -100,6 +100,53 @@ export class GmailRepository {
     }
   }
 
+  public async getMessageIdsByLabelsAndBackfill(
+    userId: string,
+    labelIds: string[] = [],
+    backfillDays?: number
+  ): Promise<GmailMessageIdsResult> {
+    const errors: string[] = [];
+    const uniqueIds = new Set<string>();
+    const query = this.buildBackfillQuery(backfillDays);
+    try {
+      const auth = await this.buildAuthClient();
+      const gmail = google.gmail({ version: 'v1', auth });
+
+      const labelsToFetch = labelIds.length > 0 ? labelIds : [undefined];
+
+      for (const labelId of labelsToFetch) {
+        let pageToken: string | undefined;
+        do {
+          const res = await gmail.users.messages.list({
+            userId,
+            maxResults: 500,
+            pageToken,
+            labelIds: labelId ? [labelId] : undefined,
+            q: query
+          });
+
+          const messages = res.data.messages ?? [];
+          for (const msg of messages) {
+            if (msg.id) {
+              uniqueIds.add(msg.id);
+            }
+          }
+
+          pageToken = res.data.nextPageToken ?? undefined;
+        } while (pageToken);
+      }
+
+      return { ids: [...uniqueIds], errors };
+    } catch (err) {
+      errors.push(
+        `Failed to fetch Gmail message ids by labels/backfill: ${
+          err instanceof Error ? err.message : String(err)
+        }`
+      );
+      return { ids: [], errors };
+    }
+  }
+
   public async getMessageDetails(
     userId: string = 'me',
     messageIds: string[],
@@ -315,6 +362,17 @@ export class GmailRepository {
     }
 
     return { dateSource: 'unknown' };
+  }
+
+  private buildBackfillQuery(backfillDays?: number): string | undefined {
+    if (backfillDays === undefined || backfillDays === null) {
+      return undefined;
+    }
+    const days = Number(backfillDays);
+    if (!Number.isFinite(days) || days <= 0) {
+      return undefined;
+    }
+    return `newer_than:${Math.floor(days)}d`;
   }
 
   private buildRawMessage(payload: GmailSendMessagePayload): string {

@@ -14,9 +14,15 @@ export interface GoogleCalendarEventDetail {
   calendarName?: string;
   summary: string;
   date: string;
+  updatedIso: string | null;
 }
 
 export interface GoogleCalendarAllEventIdsResult extends GoogleCalendarEventIdsResult {
+  calendarsCount: number;
+  eventDetailsById: Record<string, GoogleCalendarEventDetail>;
+}
+
+export interface GoogleCalendarFilteredEventIdsResult extends GoogleCalendarEventIdsResult {
   calendarsCount: number;
   eventDetailsById: Record<string, GoogleCalendarEventDetail>;
 }
@@ -145,7 +151,8 @@ export class GoogleCalendarRepository {
                 calendarId,
                 calendarName: calendarNames.get(calendarId),
                 summary: item.summary ?? '(no title)',
-                date: this.formatEventDate(item.start?.dateTime ?? item.start?.date)
+                date: this.formatEventDate(item.start?.dateTime ?? item.start?.date),
+                updatedIso: this.formatDateTimeIso(item.updated ?? null)
               };
             }
           }
@@ -161,6 +168,155 @@ export class GoogleCalendarRepository {
       );
       return { ids: [], errors, calendarsCount: 0, eventDetailsById: {} };
     }
+  }
+
+  public async getEventIdsByCalendarIds(
+    calendarIds: string[],
+    backfillDays?: number
+  ): Promise<GoogleCalendarFilteredEventIdsResult> {
+    const errors: string[] = [];
+    const normalizedIds = calendarIds
+      .filter((id) => typeof id === 'string' && id.trim() !== '')
+      .map((id) => id.trim());
+
+    if (normalizedIds.length === 0) {
+      errors.push('No Google Calendar calendarIds provided for config-based coverage.');
+      return { ids: [], errors, calendarsCount: 0, eventDetailsById: {} };
+    }
+
+    const backfillMs = typeof backfillDays === 'number' && Number.isFinite(backfillDays) && backfillDays > 0
+      ? Date.now() - Math.floor(backfillDays) * 24 * 60 * 60 * 1000
+      : null;
+    const timeMin = backfillMs ? new Date(backfillMs).toISOString() : undefined;
+
+    try {
+      const auth = await this.buildAuthClient();
+      const calendar = google.calendar({ version: 'v3', auth });
+
+      const calendarNames = new Map<string, string>();
+      let calendarPageToken: string | undefined;
+      do {
+        const res = await calendar.calendarList.list({ maxResults: 250, pageToken: calendarPageToken });
+        const items = res.data.items ?? [];
+        for (const item of items) {
+          if (item.id && item.summary) {
+            calendarNames.set(item.id, item.summary);
+          }
+        }
+        calendarPageToken = res.data.nextPageToken ?? undefined;
+      } while (calendarPageToken);
+
+      const ids: string[] = [];
+      const eventDetailsById: Record<string, GoogleCalendarEventDetail> = {};
+
+      for (const calendarId of normalizedIds) {
+        let eventsPageToken: string | undefined;
+        do {
+          const res = await calendar.events.list({
+            calendarId,
+            maxResults: 2500,
+            pageToken: eventsPageToken,
+            timeMin,
+            singleEvents: true,
+            showDeleted: false,
+            orderBy: timeMin ? 'startTime' : undefined
+          });
+
+          const items = res.data.items ?? [];
+          for (const item of items) {
+            if (item.id) {
+              ids.push(item.id);
+              eventDetailsById[item.id] = {
+                id: item.id,
+                calendarId,
+                calendarName: calendarNames.get(calendarId),
+                summary: item.summary ?? '(no title)',
+                date: this.formatEventDate(item.start?.dateTime ?? item.start?.date),
+                updatedIso: this.formatDateTimeIso(item.updated ?? null)
+              };
+            }
+          }
+
+          eventsPageToken = res.data.nextPageToken ?? undefined;
+        } while (eventsPageToken);
+      }
+
+      return { ids, errors, calendarsCount: normalizedIds.length, eventDetailsById };
+    } catch (err) {
+      errors.push(
+        `Failed to fetch Google Calendar event ids for configured calendars: ${
+          err instanceof Error ? err.message : String(err)
+        }`
+      );
+      return { ids: [], errors, calendarsCount: 0, eventDetailsById: {} };
+    }
+  }
+
+  public async getEventDetailsByIdsAcrossCalendars(
+    calendarIds: string[],
+    eventIds: string[]
+  ): Promise<{ detailsById: Record<string, GoogleCalendarEventDetail>; errors: string[] }> {
+    const errors: string[] = [];
+    const detailsById: Record<string, GoogleCalendarEventDetail> = {};
+    const normalizedCalendars = calendarIds
+      .filter((id) => typeof id === 'string' && id.trim() !== '')
+      .map((id) => id.trim());
+
+    if (normalizedCalendars.length === 0 || eventIds.length === 0) {
+      return { detailsById, errors };
+    }
+
+    try {
+      const auth = await this.buildAuthClient();
+      const calendar = google.calendar({ version: 'v3', auth });
+
+      const calendarNames = new Map<string, string>();
+      let calendarPageToken: string | undefined;
+      do {
+        const res = await calendar.calendarList.list({ maxResults: 250, pageToken: calendarPageToken });
+        const items = res.data.items ?? [];
+        for (const item of items) {
+          if (item.id && item.summary) {
+            calendarNames.set(item.id, item.summary);
+          }
+        }
+        calendarPageToken = res.data.nextPageToken ?? undefined;
+      } while (calendarPageToken);
+
+      for (const eventId of eventIds) {
+        for (const calendarId of normalizedCalendars) {
+          try {
+            const res = await calendar.events.get({
+              calendarId,
+              eventId
+            });
+            const item = res.data;
+            if (item.id) {
+              detailsById[eventId] = {
+                id: item.id,
+                calendarId,
+                calendarName: calendarNames.get(calendarId),
+                summary: item.summary ?? '(no title)',
+                date: this.formatEventDate(item.start?.dateTime ?? item.start?.date),
+                updatedIso: this.formatDateTimeIso(item.updated ?? null)
+              };
+              break;
+            }
+          } catch (err) {
+            const message = err instanceof Error ? err.message : String(err);
+            if (!message.includes('404') && !message.toLowerCase().includes('not found')) {
+              errors.push(`Failed to fetch Calendar event ${eventId} from ${calendarId}: ${message}`);
+            }
+          }
+        }
+      }
+    } catch (err) {
+      errors.push(
+        `Failed to initialize Google Calendar client: ${err instanceof Error ? err.message : String(err)}`
+      );
+    }
+
+    return { detailsById, errors };
   }
 
   public async getEventsInWindow(
@@ -308,6 +464,17 @@ export class GoogleCalendarRepository {
     const parsed = new Date(raw);
     if (!Number.isNaN(parsed.getTime())) {
       return parsed.toISOString().slice(0, 10);
+    }
+    return raw;
+  }
+
+  private formatDateTimeIso(raw?: string | null): string | null {
+    if (!raw) {
+      return null;
+    }
+    const parsed = new Date(raw);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed.toISOString();
     }
     return raw;
   }

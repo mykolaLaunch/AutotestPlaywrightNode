@@ -6,7 +6,7 @@ import fs from 'fs';
 import path from 'path';
 
 test.describe('Local files tests', { tag: ['@local-files', '@regression'] }, () => {
-  test('File tree db completeness test', async () => {
+  test('File coverage', async () => {
     console.info('--- Local files test start');
     console.info('Action: load file-system raw items and file tree schema.');
     const fileRepository = new FileTreeRepository();
@@ -80,7 +80,7 @@ test.describe('Local files tests', { tag: ['@local-files', '@regression'] }, () 
 
   // Checks that as updated_utc increases, id does not decrease (adjacent-pair order check on DB sample).
   test(
-    'Local files ingestion order by updated_utc vs id',
+    'Local files order by updated_utc',
     { tag: ['@order-test'] },
     async () => {
     console.info('--- Local files ingestion order test start');
@@ -111,7 +111,7 @@ test.describe('Local files tests', { tag: ['@local-files', '@regression'] }, () 
   );
 
   test(
-    'Create local file and verify raw_item ingestion by external_id',
+    'New file',
     { tag: ['@local-files', '@dynamic', '@new-object-load'] },
     async () => {
       console.info('--- Local files dynamic ingestion test start');

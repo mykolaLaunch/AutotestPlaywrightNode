@@ -57,10 +57,12 @@ test.describe('Entity profile cases (Alex Carter)', () => {
 
       let evaluation: AnswerEvaluation = { passed: false };
       if (parsed.body) {
-        const profileResult = entityProfileValidator.validateEntityProfileUsage(parsed.body, {
-          requireCitations: false,
-          requireRetrievalData: false
-        });
+      const requireSteps = (process.env.ENTITY_PROFILE_VALIDATE_STEPS ?? '').toLowerCase() === 'true';
+      const profileResult = entityProfileValidator.validateEntityProfileUsage(parsed.body, {
+        requireCitations: false,
+        requireRetrievalData: false,
+        requireSteps
+      });
         const evaluationResult = await evaluationValidator.validate(
           payload.query,
           parsed.body.answer,
