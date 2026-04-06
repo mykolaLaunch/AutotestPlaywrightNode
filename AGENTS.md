@@ -321,6 +321,38 @@ Preferred output paths:
 
 ---
 
+## Codex-Based CLI QA Architecture (must follow)
+
+This repository maintains a modular Codex-based QA system. Follow this architecture strictly:
+
+- **Cases are single-file JSON** stored under: `qa/codex/cases/<type>/TC-*.json`
+- **Runner** is stable and generic: `qa/codex/runner/run-case.ts`
+- **Steps** are reusable, small modules: `qa/codex/steps/*.ts`
+- **Utilities and types** live under: `qa/codex/utils`, `qa/codex/types.ts`
+- **Logs** are written to: `qa/logs/YYYY-MM-DD/<caseId>/run-<id>.json`
+
+Execution:
+- One command per case: `npx ts-node qa/codex/runner/run-case.ts --case-file <path>`
+- Steps are defined by the case or defaulted by case `type`.
+
+Validation:
+- **Do not use LLM validators or test frameworks** for codex-based cases.
+- Codex (assistant) reads bundle output and makes a manual correctness judgement.
+
+Case language:
+- All email bodies and questions must be written in **English**.
+
+Post-run manual verdict (required):
+- After every Codex case execution, **read the bundle output** under `qa/logs/YYYY-MM-DD/<caseId>/run-<id>.json`.
+- Compare `chat.answer` to the case `question` and the email content in the bundle.
+- Provide a **human verdict** in chat: `PASS` or `FAIL`, plus a short rationale and any gaps.
+- Do this **every time** without waiting for a reminder.
+
+Git discipline:
+- **All files created by Codex must be added to git** unless the user explicitly says otherwise.
+
+---
+
 ## Change discipline
 
 For any non-trivial task, first present a short plan before making broad edits.

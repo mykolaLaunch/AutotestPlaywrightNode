@@ -284,6 +284,20 @@ export class GmailRepository {
 
   private async buildAuthClient() {
     loadEnvOnce();
+    const noProxyHosts = ['oauth2.googleapis.com', 'googleapis.com'];
+    const currentNoProxy = process.env.NO_PROXY ?? '';
+    const mergedNoProxy = [...currentNoProxy.split(',').map((v) => v.trim()).filter(Boolean), ...noProxyHosts]
+      .filter((value, index, array) => array.indexOf(value) === index)
+      .join(',');
+    process.env.NO_PROXY = mergedNoProxy;
+
+    const proxyVars = ['HTTP_PROXY', 'HTTPS_PROXY', 'ALL_PROXY'];
+    for (const proxyVar of proxyVars) {
+      const value = process.env[proxyVar];
+      if (value && value.includes('127.0.0.1:9')) {
+        process.env[proxyVar] = '';
+      }
+    }
     const credentials = this.readJsonFile<Record<string, unknown>>(this.credentialsPath);
     const token = this.readJsonFile<Record<string, unknown>>(this.tokenPath);
 

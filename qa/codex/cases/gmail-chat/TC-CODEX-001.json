@@ -1,0 +1,8 @@
+{
+  "id": "TC-CODEX-001",
+  "type": "gmail-chat",
+  "subject": "Launch.AI Test Event: Project Sync",
+  "body": "Hello team,\n\nWe will hold the Project Sync meeting on Tuesday, April 16, 2026 at 10:30 AM. The meeting will take place in Conference Room B on the 3rd floor. Please prepare a short update on your current tasks.\n\nAgenda:\n1) Status updates (10 minutes)\n2) Risk review (10 minutes)\n3) Next milestones and owners (10 minutes)\n4) Open questions (5 minutes)\n\nIf you cannot attend, email your update by Monday 6:00 PM so it can be included. Please bring any blockers or dependencies that need escalation. We will capture action items and owners at the end of the meeting and send a summary to the team.\n\nAttendees: Alex Kim, Maria Soto, Ivan Petrov.\n\nThanks,\nQA Automation",
+  "question": "When is the Project Sync and where will it take place?",
+  "command": "npx ts-node qa/codex/runner/run-case.ts --case-file qa/codex/cases/gmail-chat/TC-CODEX-001.json"
+}
