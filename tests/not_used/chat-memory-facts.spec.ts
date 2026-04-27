@@ -5,7 +5,7 @@ import { buildExpectationsLabel } from '../../src/testing/utils/expectationsLabe
 import { ChatLogRepository } from '../../src/testing/repositories/ChatLogRepository';
 
 test.describe('Memory facts from puzzle dataset', () => {
-  const apiBaseUrl = process.env.API_BASE_URL ?? 'https://localhost:5199';
+  const apiBaseUrl = process.env.API_BASE_URL ?? 'https://localhost:5198';
   const specId = 'chat-memory-facts';
 
   test('TC-MEM-001 - Daily rewards facts', async ({ request }) => {

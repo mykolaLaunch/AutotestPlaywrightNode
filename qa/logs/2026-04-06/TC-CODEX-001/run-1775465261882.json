@@ -1,0 +1,505 @@
+{
+  "runId": "run-1775465261882",
+  "caseId": "TC-CODEX-001",
+  "caseFile": "E:\\Launch\\playwright_node\\testCases\\codex\\email-chat.json",
+  "case": {
+    "id": "TC-CODEX-001",
+    "subject": "Launch.AI Test Event: Project Sync",
+    "body": "Hello team,\n\nWe will hold the Project Sync meeting on Tuesday, April 16, 2026 at 10:30 AM. The meeting will take place in Conference Room B on the 3rd floor. Please prepare a short update on your current tasks.\n\nAgenda:\n1) Status updates (10 minutes)\n2) Risk review (10 minutes)\n3) Next milestones and owners (10 minutes)\n4) Open questions (5 minutes)\n\nIf you cannot attend, email your update by Monday 6:00 PM so it can be included. Please bring any blockers or dependencies that need escalation. We will capture action items and owners at the end of the meeting and send a summary to the team.\n\nAttendees: Alex Kim, Maria Soto, Ivan Petrov.\n\nThanks,\nQA Automation",
+    "question": "Когда будет Project Sync и где он пройдет?",
+    "command": "npx ts-node qa/cli/run-codex-case.ts --case-id TC-CODEX-001"
+  },
+  "email": {
+    "from": "mykola@launchnyc.io",
+    "to": "mykola@launchnyc.io",
+    "messageId": "19d61f9eef22a33c",
+    "threadId": "19d61f9eef22a33c",
+    "sentAt": "2026-04-06T08:47:42.435Z"
+  },
+  "ingest": {
+    "found": true,
+    "attempts": [
+      {
+        "attempt": 1,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T08:47:42.470Z"
+      },
+      {
+        "attempt": 2,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T08:47:45.506Z"
+      },
+      {
+        "attempt": 3,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T08:47:48.532Z"
+      },
+      {
+        "attempt": 4,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T08:47:51.570Z"
+      },
+      {
+        "attempt": 5,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T08:47:54.599Z"
+      },
+      {
+        "attempt": 6,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T08:47:57.626Z"
+      },
+      {
+        "attempt": 7,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T08:48:00.656Z"
+      },
+      {
+        "attempt": 8,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T08:48:03.679Z"
+      },
+      {
+        "attempt": 9,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T08:48:06.703Z"
+      },
+      {
+        "attempt": 10,
+        "found": true,
+        "rowCount": 1,
+        "at": "2026-04-06T08:48:09.741Z"
+      }
+    ],
+    "matchedRowsCount": 1
+  },
+  "chat": {
+    "apiBaseUrl": "https://localhost:5199",
+    "payload": {
+      "query": "Когда будет Project Sync и где он пройдет?",
+      "model": "string",
+      "includeAnswerLog": true
+    },
+    "status": 200,
+    "errors": [],
+    "answer": "Встреча Project Sync запланирована на **вторник, 16 апреля 2026 года, в 10:30 утра**. Она пройдет в **конференц-зале Conference Room B на 3-м этаже** [в источнике](C2).",
+    "citations": [
+      {
+        "dataItemType": "email",
+        "graphId": "4:f790593a-1163-4790-81b2-727de68cb712:1583",
+        "source": "gmail",
+        "externalId": "19d61f9eef22a33c",
+        "titleOrSubject": "Launch.AI Test Event: Project Sync",
+        "createdAtUtc": "2026-04-06T08:47:42+00:00",
+        "snippet": "Hello team, We will hold the Project Sync meeting on Tuesday, April 16, 2026 at 10:30 AM. The meeting will take place in Conference Room B on the 3rd floor. Please prepare a short update on your curre",
+        "collectionType": "thread",
+        "collectionName": "Launch.AI Test Event: Project Sync",
+        "authorDisplay": null,
+        "authorEmail": "mykola@launchnyc.io",
+        "authorUsername": null,
+        "labels": [
+          "C2"
+        ],
+        "summary": null
+      }
+    ],
+    "answerLog": {
+      "originalQuery": "Когда будет Project Sync и где он пройдет?",
+      "rewrittenQuery": "Когда будет Project Sync и где он пройдет?",
+      "steps": null,
+      "stepResults": null,
+      "retrieval": {
+        "totalChunks": 12,
+        "totalDataItems": 12,
+        "chunks": [
+          {
+            "chunkId": "4:f790593a-1163-4790-81b2-727de68cb712:929",
+            "score": 1,
+            "textPreview": "Hi, We are currently proceeding according to plan. We will keep you updated if anything changes. Best, Project Manager",
+            "dataItem": {
+              "graphId": "4:f790593a-1163-4790-81b2-727de68cb712:928",
+              "source": "gmail",
+              "externalId": "19c8b5fb98f79930",
+              "dataItemType": "email",
+              "titleOrSubject": "Re: Release Timeline Confirmation",
+              "createdAtUtc": "2025-03-10T10:00:00+00:00"
+            },
+            "entities": [
+              {
+                "label": "email",
+                "key": "e581c133982647219f22e1b12b667d07",
+                "display": "uewek87@gmail.com"
+              },
+              {
+                "label": "backend_team",
+                "key": "bb644cc19e604dbfaaeaeceed7206cc1",
+                "display": "Backend Team"
+              }
+            ]
+          },
+          {
+            "chunkId": "4:f790593a-1163-4790-81b2-727de68cb712:1584",
+            "score": 0.9320715658474612,
+            "textPreview": "Hello team, We will hold the Project Sync meeting on Tuesday, April 16, 2026 at 10:30 AM. The meeting will take place in Conference Room B on the 3rd floor. Please prepare a short update on your current tasks. Agenda: 1) Status updates (10 minutes) 2) Risk review (10 minutes) 3) Next milestones and owners (10 minutes) 4) Open questions (5 minutes) If you cannot attend, email your update by Monday 6:00 PM so it can be included. Please bring any blockers or dependencies that need escalation. We will capture action items and owners at the end of the meeting and send a summary to the team. Attendees: Alex Kim, Maria Soto, Ivan Petrov. Thanks, QA Automation",
+            "dataItem": {
+              "graphId": "4:f790593a-1163-4790-81b2-727de68cb712:1583",
+              "source": "gmail",
+              "externalId": "19d61f9eef22a33c",
+              "dataItemType": "email",
+              "titleOrSubject": "Launch.AI Test Event: Project Sync",
+              "createdAtUtc": "2026-04-06T08:47:42+00:00"
+            },
+            "entities": []
+          },
+          {
+            "chunkId": "4:f790593a-1163-4790-81b2-727de68cb712:197",
+            "score": 0.867906928200077,
+            "textPreview": "Please analyse the puzzle game project from a launch-readiness angle. First, summarise the soft launch plan including market, KPIs, and any linked dependencies. Then identify the three biggest blockers that could prevent a successful launch, combining evidence from product requirements, team discussions, and reports. After that, draft a short email to leadership highlighting the most urgent blocker and the owner who should respond.",
+            "dataItem": {
+              "graphId": "4:f790593a-1163-4790-81b2-727de68cb712:196",
+              "source": "slack",
+              "externalId": "62acff29-69b3-44f0-a76a-f3e873b48750",
+              "dataItemType": "slack_message",
+              "titleOrSubject": null,
+              "createdAtUtc": "2026-03-18T20:34:47.234719+00:00"
+            },
+            "entities": [
+              {
+                "label": "person",
+                "key": "1f43d8c817744b3f90617864bd892128",
+                "display": "Mykola"
+              },
+              {
+                "label": "channel",
+                "key": "a6542cc614fc45bb8ca8c4032d71ff30",
+                "display": "lp-ai-qa-test-content"
+              }
+            ]
+          },
+          {
+            "chunkId": "4:f790593a-1163-4790-81b2-727de68cb712:195",
+            "score": 0.8653667293220857,
+            "textPreview": "Look through all project sources for the puzzle game and do the following in sequence: first, summarise the economy and reward balance situation; second, compare product expectations with developer concerns; third, tell me the top 3 changes that would most improve retention without inventing any new systems; and fourth, draft a reply to the monetization team asking whether the current reward loop is strong enough.",
+            "dataItem": {
+              "graphId": "4:f790593a-1163-4790-81b2-727de68cb712:194",
+              "source": "slack",
+              "externalId": "8749594f-4dff-4b88-9a84-1dc607659683",
+              "dataItemType": "slack_message",
+              "titleOrSubject": null,
+              "createdAtUtc": "2026-03-18T20:40:36.4073889+00:00"
+            },
+            "entities": [
+              {
+                "label": "person",
+                "key": "1f43d8c817744b3f90617864bd892128",
+                "display": "Mykola"
+              },
+              {
+                "label": "channel",
+                "key": "a6542cc614fc45bb8ca8c4032d71ff30",
+                "display": "lp-ai-qa-test-content"
+              }
+            ]
+          },
+          {
+            "chunkId": "4:f790593a-1163-4790-81b2-727de68cb712:628",
+            "score": 0.8653667293220857,
+            "textPreview": "Learn how to contribute to software projects. ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ( https://github.com?utm_source=github&utm_medium=email&utm_campaign=nux_email_5 ) ( https://github.com?utm_source=github&utm_medium=email&utm_campaign=nux_email_5 ) Hi there, *Today’s challenge: Make your first pull request.* A pull request (PR) is how you propose changes to a project. It’s essential for collaborating with other developers.",
+            "dataItem": {
+              "graphId": "4:f790593a-1163-4790-81b2-727de68cb712:627",
+              "source": "gmail",
+              "externalId": "19ccbc48dd3bf4d3",
+              "dataItemType": "email",
+              "titleOrSubject": "It’s time to create your first pull request on GitHub",
+              "createdAtUtc": "2026-03-08T04:46:20+00:00"
+            },
+            "entities": [
+              {
+                "label": "collection",
+                "key": "e665c6156ced4662b021cbfc10a880a4",
+                "display": "It’s time to create your first pull request on GitHub"
+              },
+              {
+                "label": "author",
+                "key": "a693ef577f12460f8af3212be6b69a7f",
+                "display": "GitHub"
+              }
+            ]
+          },
+          {
+            "chunkId": "4:f790593a-1163-4790-81b2-727de68cb712:185",
+            "score": 0.8578345723109458,
+            "textPreview": "Use the full project memory for the puzzle game and execute the following in order. First, summarise what the sources say about gameplay loop, player rewards, and progression motivation. Second, identify the top 3 disagreements between requirement documents and team discussions. Third, turn those disagreements into clear follow-up questions for stakeholders. Finally, draft a short message to the producer asking for answers before the next milestone review.",
+            "dataItem": {
+              "graphId": "4:f790593a-1163-4790-81b2-727de68cb712:184",
+              "source": "slack",
+              "externalId": "98d47c76-8da9-4d59-acc1-0352a655347c",
+              "dataItemType": "slack_message",
+              "titleOrSubject": null,
+              "createdAtUtc": "2026-03-18T20:42:25.385519+00:00"
+            },
+            "entities": [
+              {
+                "label": "person",
+                "key": "1f43d8c817744b3f90617864bd892128",
+                "display": "Mykola"
+              },
+              {
+                "label": "channel",
+                "key": "a6542cc614fc45bb8ca8c4032d71ff30",
+                "display": "lp-ai-qa-test-content"
+              }
+            ]
+          },
+          {
+            "chunkId": "4:f790593a-1163-4790-81b2-727de68cb712:203",
+            "score": 0.8578345723109458,
+            "textPreview": "I need a structured project update for the puzzle game. First summarise the performance requirements and the latest implementation status from all sources. Then identify the top 3 performance risks that could affect player experience, especially around loading, restart speed, FPS, or leaderboard-related concerns. After that, draft a short status reply to engineering leadership saying whether the game looks ready for soft launch from a performance perspective.",
+            "dataItem": {
+              "graphId": "4:f790593a-1163-4790-81b2-727de68cb712:202",
+              "source": "slack",
+              "externalId": "ebb27f71-3f89-4127-91b6-57984792419b",
+              "dataItemType": "slack_message",
+              "titleOrSubject": null,
+              "createdAtUtc": "2026-03-18T20:32:41.872179+00:00"
+            },
+            "entities": [
+              {
+                "label": "person",
+                "key": "1f43d8c817744b3f90617864bd892128",
+                "display": "Mykola"
+              },
+              {
+                "label": "channel",
+                "key": "a6542cc614fc45bb8ca8c4032d71ff30",
+                "display": "lp-ai-qa-test-content"
+              }
+            ]
+          },
+          {
+            "chunkId": "4:f790593a-1163-4790-81b2-727de68cb712:209",
+            "score": 0.8455681883178372,
+            "textPreview": "Please review everything we have about the mobile puzzle game project across Gmail, Slack, files, and calendar notes. First, summarise the current product scope in 6–8 bullet points. Then identify the top 3 features that are definitely confirmed by at least one source and the top 3 risks or disagreements that appear across sources. After that, draft a short Slack reply to the product manager explaining what needs alignment before soft launch.",
+            "dataItem": {
+              "graphId": "4:f790593a-1163-4790-81b2-727de68cb712:208",
+              "source": "slack",
+              "externalId": "d24a1778-7fdb-404d-8640-6c4e4d154d5f",
+              "dataItemType": "slack_message",
+              "titleOrSubject": null,
+              "createdAtUtc": "2026-03-18T20:29:16.1696391+00:00"
+            },
+            "entities": [
+              {
+                "label": "person",
+                "key": "1f43d8c817744b3f90617864bd892128",
+                "display": "Mykola"
+              },
+              {
+                "label": "channel",
+                "key": "a6542cc614fc45bb8ca8c4032d71ff30",
+                "display": "lp-ai-qa-test-content"
+              }
+            ]
+          },
+          {
+            "chunkId": "4:f790593a-1163-4790-81b2-727de68cb712:642",
+            "score": 0.6376724770070594,
+            "textPreview": "See how easy it is to import, upload, and organize your data. <https://airtable.com/> Your base is waiting for your data <https://www.airtable.com/guides/build/add-data-with-records> The real magic of Airtable starts when you add your data—whether it’s customer lists, project tasks, campaign plans, or team processes. Not sure where to begin? This quick guide walks you through how to add records to your base and start building workflows that fit your team’s needs. Learn how to add your data <https://www.airtable.com/guides/build/add-data-with-records> <https://www.facebook.com/airtableapp/> <https://twitter.com/airtable> <https://www.instagram.com/airtable/> <https://www.linkedin.com/company/airtable> Copyright © 2026 Airtable, all rights reserved. 1 Front Street, Floor 28, San Francisco, CA 94111 Help Center <https://support.airtable.com> | Resources <https://www.airtable.com/lp/resources> | Privacy Policy <https://www.airtable.com/company/privacy> Unsubscribe from all emails <https://pages.airtable.com/Unsubscribe-from-all.html> | Unsubscribe from marketing emails <https://links.airtable.com/s/eh/ek6BjXHTGVPtLzAi_j75yie3NiimmbHp7uWbcHDJKf2BVyB9-4-zRgfrLJ435CwQkuCXC_qW8QhC4fRF1fvMRqbwUbphZADtmUNUuwP4MQDhVyAYTYSAzjddOUCpPc67jfglXedfHEqqLw2PTnwIxmVtaPNVHk-zx3iymOm6RA1LgvKn9ZGxQFinV5Jf8OCuDRJnSCY7lMCLNVWr8kq0xdN-B1LE9nG9PiyShACXWAa2sj76xojZHWGL8M0ffOFOutxFgL1Fxg/2HF2qq-sJwEqlaHAkxupg0nn1YpaiOMC/18>",
+            "dataItem": {
+              "graphId": "4:f790593a-1163-4790-81b2-727de68cb712:641",
+              "source": "gmail",
+              "externalId": "19cc41846f96786e",
+              "dataItemType": "email",
+              "titleOrSubject": "Make Airtable work for you—add your data today",
+              "createdAtUtc": "2026-03-06T17:00:49+00:00"
+            },
+            "entities": [
+              {
+                "label": "ai_application",
+                "key": "de161191bf684f0bb2571397ed2cdcf8",
+                "display": "Airtable"
+              },
+              {
+                "label": "collection",
+                "key": "6a81fbd609c147a5acbcb8c1f9e90dbe",
+                "display": "Make Airtable work for you—add your data today"
+              },
+              {
+                "label": "person",
+                "key": "bff6d6c591714ca6905ae9d4db3f693c",
+                "display": "The Airtable Team"
+              }
+            ]
+          },
+          {
+            "chunkId": "4:f790593a-1163-4790-81b2-727de68cb712:714",
+            "score": 0.5292381494107024,
+            "textPreview": "Collaborate and start adding to your base with ease Bring your team together in your Airtable base Invite your team to your Airtable base to streamline projects and enhance communication. Together, you can share ideas, track progress, and boost productivity. Invite now <https://airtable.com/help_link/qt-shareBase> <https://airtable.com/help_link/qt-shareBase> Tie your project together with these most used features <https://support.airtable.com/docs/getting-started-with-airtable-views> Create a view With various views like grid, calendar, and Kanban, you can visualize your data in the way that works best for you. Learn more → <https://support.airtable.com/docs/getting-started-with-airtable-views> <https://support.airtable.com/docs/building-and-sharing-forms-in-airtable> Build a form Create user-friendly forms to gather information effortlessly, ensuring that your team stays organized and informed. Learn more → <https://support.airtable.com/docs/building-and-sharing-forms-in-airtable> <https://www.airtable.com/guides/build/bring-your-workflow-into-airtable> Organize a workflow Organize your data to best suit your needs and optimize your workflow mapping. Learn more → <https://www.airtable.com/guides/build/bring-your-workflow-into-airtable> <https://www.facebook.com/airtableapp/> <https://twitter.com/airtable> <https://www.instagram.com/airtable/> <https://www.linkedin.com/company/airtable> Copyright © 2026 Airtable, all rights reserved. 1 Front Street, Floor 28, San Francisco, CA 94111 Help Center <https://support.airtable.com> | Resources <https://www.airtable.com/lp/resources> | Privacy Policy <https://www.airtable.com/company/privacy> Unsubscribe from all emails <https://pages.airtable.com/Unsubscribe-from-all.html> | Unsubscribe from marketing emails <https://links.airtable.com/s/eh/i05l2U0cr8esA9sRDBYSq6iu03pukJtH472L8LG58T7Tt9-6Y6OJW5jsyUXJfbP5tjx4owtDXYiAvmHQh1Zbox1HoG5DRT337Sr-Kah1oaAPQ0g5A7p1EY4_wBfKDMpm5dXaD_i_5p1IpmUmqxrAEBb63TazV2j0pMhuTUTtJ7I_9L1mnHcp72qItxFMfs6aVjniiS7rKeAPPbhqfh_eO3THlP6kqtPkJFcLpehnA6y1mEWHnhbOW0LmPd6a19T4i3RgiAiBog/iLJCHXUk7bnk0E3ldv9zeGzHJO8dpX8H/18>",
+            "dataItem": {
+              "graphId": "4:f790593a-1163-4790-81b2-727de68cb712:713",
+              "source": "gmail",
+              "externalId": "19caa58256bcacff",
+              "dataItemType": "email",
+              "titleOrSubject": "Start organizing your app with your team",
+              "createdAtUtc": "2026-03-01T17:00:28+00:00"
+            },
+            "entities": [
+              {
+                "label": "ai_application",
+                "key": "de161191bf684f0bb2571397ed2cdcf8",
+                "display": "Airtable"
+              },
+              {
+                "label": "person",
+                "key": "bff6d6c591714ca6905ae9d4db3f693c",
+                "display": "The Airtable Team"
+              },
+              {
+                "label": "collection",
+                "key": "8f2775a543374dca91e02124d4e48df7",
+                "display": "Start organizing your app with your team"
+              }
+            ]
+          },
+          {
+            "chunkId": "4:f790593a-1163-4790-81b2-727de68cb712:66",
+            "score": 0.3035492911388085,
+            "textPreview": "updated\"\"\",\"\",\"\",\"\",\"15\",\"14\",\"Gmail — Delta Polling\",\"\",\"\" \"46\",\"Gmail historyId checkpoint persisted\",\"Verify checkpoint stored and used on next sync.\",\"\",\"\",\"gmail,delta,checkpoint\",\"high\",\"critical\",\"functional\",\"positive\",\"is-not-automated\",\"actual\",\"no\",\"api\",\"classic\",\"1. \"\"Run sync\"\" 2. \"\"Check connector_state table\"\"\",\"1. \"\"historyId stored and updated after each successful sync batch\"\" 2. \"\"Next sync resumes from stored ID\"\"\",\"\",\"\",\"\",\"15\",\"14\",\"Gmail — Delta Polling\",\"\",\"\" \"47\",\"Slack delta sync fetches only new messages\",\"Verify incremental sync per channel.\",\"\",\"\",\"slack,delta,incremental\",\"high\",\"critical\",\"functional\",\"positive\",\"is-not-automated\",\"actual\",\"no\",\"api\",\"classic\",\"1. \"\"Complete backfill\"\" 2. \"\"Post new messages in indexed channel\"\" 3. \"\"Trigger sync\"\"\",\"1. \"\"Only new messages since last ts fetched\"\" 2. \"\"Checkpoints per channel updated\"\"\",\"\",\"\",\"\",\"16\",\"14\",\"Slack — Delta Polling\",\"\",\"\" \"48\",\"Edited Slack messages detected in delta\",\"Verify edit detection during delta sync.\",\"\",\"\",\"slack,delta,edit\",\"medium\",\"major\",\"functional\",\"positive\",\"is-not-automated\",\"actual\",\"no\",\"api\",\"classic\",\"1. \"\"Edit a previously ingested message\"\" 2. \"\"Trigger delta sync\"\"\",\"1. \"\"Edit detected\"\" 2. \"\"New version created\"\" 3. \"\"Content hash differs from original\"\"\",\"\",\"\",\"\",\"16\",\"14\",\"Slack — Delta Polling\",\"\",\"\" \"49\",\"Deleted Slack messages handled\",\"Verify delete handling.\",\"\",\"\",\"slack,delta,delete\",\"medium\",\"major\",\"functional\",\"positive\",\"is-not-automated\",\"actual\",\"no\",\"api\",\"classic\",\"1. \"\"Delete a previously ingested message\"\" 2. \"\"Trigger delta sync\"\"\",\"1. \"\"Tombstone written or soft-delete applied\"\" 2. \"\"Message no longer appears in search results\"\" 3. \"\"Delete event logged\"\"\",\"\",\"\",\"\",\"16\",\"14\",\"Slack — Delta Polling\",\"\",\"\" \"50\",\"Drive changes.list fetches only modifications\",\"Verify incremental sync via startPageToken.\",\"\",\"\",\"drive,delta,incremental\",\"high\",\"critical\",\"functional\",\"positive\",\"is-not-automated\",\"actual\",\"no\",\"api\",\"classic\",\"1. \"\"Complete backfill\"\" 2. \"\"Edit one doc, add one new file\"\" 3. \"\"Trigger sync\"\"\",\"1.",
+            "dataItem": {
+              "graphId": "4:f790593a-1163-4790-81b2-727de68cb712:46",
+              "source": "file-system",
+              "externalId": "E:\\Launch\\playwright_node\\TestFilesDirectory\\Connector_QA_Qase_Import.csv",
+              "dataItemType": "local_file",
+              "titleOrSubject": null,
+              "createdAtUtc": "2026-02-27T20:20:22.6755544+00:00"
+            },
+            "entities": []
+          },
+          {
+            "chunkId": "4:f790593a-1163-4790-81b2-727de68cb712:458",
+            "score": 0.3035492911388085,
+            "textPreview": "updated\"\"\",\"\",\"\",\"\",\"15\",\"14\",\"Gmail — Delta Polling\",\"\",\"\" \"46\",\"Gmail historyId checkpoint persisted\",\"Verify checkpoint stored and used on next sync.\",\"\",\"\",\"gmail,delta,checkpoint\",\"high\",\"critical\",\"functional\",\"positive\",\"is-not-automated\",\"actual\",\"no\",\"api\",\"classic\",\"1. \"\"Run sync\"\" 2. \"\"Check connector_state table\"\"\",\"1. \"\"historyId stored and updated after each successful sync batch\"\" 2. \"\"Next sync resumes from stored ID\"\"\",\"\",\"\",\"\",\"15\",\"14\",\"Gmail — Delta Polling\",\"\",\"\" \"47\",\"Slack delta sync fetches only new messages\",\"Verify incremental sync per channel.\",\"\",\"\",\"slack,delta,incremental\",\"high\",\"critical\",\"functional\",\"positive\",\"is-not-automated\",\"actual\",\"no\",\"api\",\"classic\",\"1. \"\"Complete backfill\"\" 2. \"\"Post new messages in indexed channel\"\" 3. \"\"Trigger sync\"\"\",\"1. \"\"Only new messages since last ts fetched\"\" 2. \"\"Checkpoints per channel updated\"\"\",\"\",\"\",\"\",\"16\",\"14\",\"Slack — Delta Polling\",\"\",\"\" \"48\",\"Edited Slack messages detected in delta\",\"Verify edit detection during delta sync.\",\"\",\"\",\"slack,delta,edit\",\"medium\",\"major\",\"functional\",\"positive\",\"is-not-automated\",\"actual\",\"no\",\"api\",\"classic\",\"1. \"\"Edit a previously ingested message\"\" 2. \"\"Trigger delta sync\"\"\",\"1. \"\"Edit detected\"\" 2. \"\"New version created\"\" 3. \"\"Content hash differs from original\"\"\",\"\",\"\",\"\",\"16\",\"14\",\"Slack — Delta Polling\",\"\",\"\" \"49\",\"Deleted Slack messages handled\",\"Verify delete handling.\",\"\",\"\",\"slack,delta,delete\",\"medium\",\"major\",\"functional\",\"positive\",\"is-not-automated\",\"actual\",\"no\",\"api\",\"classic\",\"1. \"\"Delete a previously ingested message\"\" 2. \"\"Trigger delta sync\"\"\",\"1. \"\"Tombstone written or soft-delete applied\"\" 2. \"\"Message no longer appears in search results\"\" 3. \"\"Delete event logged\"\"\",\"\",\"\",\"\",\"16\",\"14\",\"Slack — Delta Polling\",\"\",\"\" \"50\",\"Drive changes.list fetches only modifications\",\"Verify incremental sync via startPageToken.\",\"\",\"\",\"drive,delta,incremental\",\"high\",\"critical\",\"functional\",\"positive\",\"is-not-automated\",\"actual\",\"no\",\"api\",\"classic\",\"1. \"\"Complete backfill\"\" 2. \"\"Edit one doc, add one new file\"\" 3. \"\"Trigger sync\"\"\",\"1.",
+            "dataItem": {
+              "graphId": "4:f790593a-1163-4790-81b2-727de68cb712:441",
+              "source": "file-system",
+              "externalId": "E:\\Launch\\playwright_node\\TestFilesDirectory\\1\\1\\1\\1\\Connector_QA_Qase_Import.csv",
+              "dataItemType": "local_file",
+              "titleOrSubject": null,
+              "createdAtUtc": "2026-02-27T19:35:50.1223492+00:00"
+            },
+            "entities": []
+          }
+        ]
+      },
+      "attachments": null,
+      "plannerPrompt": null,
+      "answerPrompts": [
+        {
+          "role": "system",
+          "content": "You are Launch.AI, a local assistant. Always respond in Markdown. Use only the provided context. Always answer with the data you have — never ask clarifying questions or request more details from the user. If the context has relevant data, present it. If the context is truly empty or completely unrelated, say so briefly. Never invent sources.\n\n## Current Session\r\nUser: uewek\r\nLocal time: 2026-04-06 10:48:23 (Central European Standard Time)\r\n\r\nThe user may appear under different names, transliterations, or usernames in the data (e.g., different spelling, nickname, or handle). Treat obvious name variations as the same person.\r\nPrioritize content authored by or directed at this user. Address the user by their first name when appropriate.\r\nUse the local time to interpret time references in the user's query (e.g., \"today\", \"yesterday\", \"last week\")."
+        },
+        {
+          "role": "system",
+          "content": "Answer clearly and completely in Markdown. You MUST cite every claim INLINE using Markdown links where the target is the chunk label (C1, C2, etc.) and the link text is a short descriptive phrase, e.g. [budget was approved](C3). Every factual statement must have at least one inline citation. NEVER list sources or references at the end — all citations must be woven into the text. If sources disagree or are ambiguous, say so. Keep the answer structured and actionable."
+        },
+        {
+          "role": "system",
+          "content": "Context (use only this data):\r\n---\r\nВстреча Project Sync запланирована на вторник, 16 апреля 2026 года, в 10:30 утра. Мероприятие пройдет в конференц-зале Conference Room B на 3-м этаже.\r\n\r\n[C1] source=gmail dataItemType=email externalId=19c8b5fb98f79930 createdAt=2025-03-10T10:00:00.0000000+00:00 title=Re: Release Timeline Confirmation author=uewek87@gmail.com collection=thread:Re: Release Timeline Confirmation entities=[email:uewek87@gmail.com; backend_team:Backend Team]\nHi, We are currently proceeding according to plan. We will keep you updated if anything changes. Best, Project Manager\r\n\r\n[C2] source=gmail dataItemType=email externalId=19d61f9eef22a33c createdAt=2026-04-06T08:47:42.0000000+00:00 title=Launch.AI Test Event: Project Sync author=mykola@launchnyc.io collection=thread:Launch.AI Test Event: Project Sync\nHello team, We will hold the Project Sync meeting on Tuesday, April 16, 2026 at 10:30 AM. The meeting will take place in Conference Room B on the 3rd floor. Please prepare a short update on your current tasks. Agenda: 1) Status updates (10 minutes) 2) Risk review (10 minutes) 3) Next milestones and owners (10 minutes) 4) Open questions (5 minutes) If you cannot attend, email your update by Monday 6:00 PM so it can be included. Please bring any blockers or dependencies that need escalation. We will capture action items and owners at the end of the meeting and send a summary to the team. Attendees: Alex Kim, Maria Soto, Ivan Petrov. Thanks, QA Automation\r\n\r\n[C3] source=slack dataItemType=slack_message externalId=62acff29-69b3-44f0-a76a-f3e873b48750 createdAt=2026-03-18T20:34:47.2347190+00:00 title=n/a author=Mykola Haidenok @mykola collection=channel:lp-ai-qa-test-content entities=[person:Mykola; channel:lp-ai-qa-test-content]\nPlease analyse the puzzle game project from a launch-readiness angle. First, summarise the soft launch plan including market, KPIs, and any linked dependencies. Then identify the three biggest blockers that could prevent a successful launch, combining evidence from product requirements, team discussions, and reports. After that, draft a short email to leadership highlighting the most urgent blocker and the owner who should respond.\r\n\r\n[C4] source=slack dataItemType=slack_message externalId=8749594f-4dff-4b88-9a84-1dc607659683 createdAt=2026-03-18T20:40:36.4073889+00:00 title=n/a author=Mykola Haidenok @mykola collection=channel:lp-ai-qa-test-content entities=[person:Mykola; channel:lp-ai-qa-test-content]\nLook through all project sources for the puzzle game and do the following in sequence: first, summarise the economy and reward balance situation; second, compare product expectations with developer concerns; third, tell me the top 3 changes that would most improve retention without inventing any new systems; and fourth, draft a reply to the monetization team asking whether the current reward loop is strong enough.\r\n\r\n[C5] source=gmail dataItemType=email externalId=19ccbc48dd3bf4d3 createdAt=2026-03-08T04:46:20.0000000+00:00 title=It’s time to create your first pull request on GitHub author=GitHub <no-reply@github.com> collection=thread:It’s time to create your first pull request on GitHub entities=[collection:It’s time to create your first pull request on GitHub; author:GitHub]\nLearn how to contribute to software projects. ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ͏‌ ( https://github.com?utm_source=github&utm_medium=email&utm_campaign=nux_email_5 ) ( https://github.com?utm_source=github&utm_medium=email&utm_campaign=nux_email_5 ) Hi there, *Today’s challenge: Make your first pull request.* A pull request (PR) is how you propose changes to a project. It’s essential for collaborating with other developers.\r\n\r\n[C6] source=slack dataItemType=slack_message externalId=98d47c76-8da9-4d59-acc1-0352a655347c createdAt=2026-03-18T20:42:25.3855190+00:00 title=n/a author=Mykola Haidenok @mykola collection=channel:lp-ai-qa-test-content entities=[person:Mykola; channel:lp-ai-qa-test-content]\nUse the full project memory for the puzzle game and execute the following in order. First, summarise what the sources say about gameplay loop, player rewards, and progression motivation. Second, identify the top 3 disagreements between requirement documents and team discussions. Third, turn those disagreements into clear follow-up questions for stakeholders. Finally, draft a short message to the producer asking for answers before the next milestone review.\r\n\r\n[C7] source=slack dataItemType=slack_message externalId=ebb27f71-3f89-4127-91b6-57984792419b createdAt=2026-03-18T20:32:41.8721790+00:00 title=n/a author=Mykola Haidenok @mykola collection=channel:lp-ai-qa-test-content entities=[person:Mykola; channel:lp-ai-qa-test-content]\nI need a structured project update for the puzzle game. First summarise the performance requirements and the latest implementation status from all sources. Then identify the top 3 performance risks that could affect player experience, especially around loading, restart speed, FPS, or leaderboard-related concerns. After that, draft a short status reply to engineering leadership saying whether the game looks ready for soft launch from a performance perspective.\r\n\r\n[C8] source=slack dataItemType=slack_message externalId=d24a1778-7fdb-404d-8640-6c4e4d154d5f createdAt=2026-03-18T20:29:16.1696391+00:00 title=n/a author=Mykola Haidenok @mykola collection=channel:lp-ai-qa-test-content entities=[person:Mykola; channel:lp-ai-qa-test-content]\nPlease review everything we have about the mobile puzzle game project across Gmail, Slack, files, and calendar notes. First, summarise the current product scope in 6–8 bullet points. Then identify the top 3 features that are definitely confirmed by at least one source and the top 3 risks or disagreements that appear across sources. After that, draft a short Slack reply to the product manager explaining what needs alignment before soft launch.\r\n\r\n[C9] source=gmail dataItemType=email externalId=19cc41846f96786e createdAt=2026-03-06T17:00:49.0000000+00:00 title=Make Airtable work for you—add your data today author=The Airtable Team <team@mail.airtable.com> collection=thread:Make Airtable work for you—add your data today entities=[ai_application:Airtable; collection:Make Airtable work for you—add your data today; person:The Airtable Team]\nSee how easy it is to import, upload, and organize your data. <https://airtable.com/> Your base is waiting for your data <https://www.airtable.com/guides/build/add-data-with-records> The real magic of Airtable starts when you add your data—whether it’s customer lists, project tasks, campaign plans, or team processes. Not sure where to begin? This quick guide walks you through how to add records to your base and start building workflows that fit your team’s needs. Learn how to add your data <https://www.airtable.com/guides/build/add-data-with-records> <https://www.facebook.com/airtableapp/> <https://twitter.com/airtable> <https://www.instagram.com/airtable/> <https://www.linkedin.com/company/airtable> Copyright © 2026 Airtable, all rights reserved. 1 Front Street, Floor 28, San Francisco, CA 94111 Help Center <https://support.airtable.com> | Resources <https://www.airtable.com/lp/resources> | Privacy Policy <https://www.airtable.com/company/privacy> Unsubscribe from all emails <https://pages.airtable.com/Unsubscribe-from-all.html> | Unsubscribe from marketing emails <https://links.airtable.com/s/eh/ek6BjXHTGVPtLzAi_j75yie3NiimmbHp7uWbcHDJKf2BVyB9-4-zRgfrLJ435CwQkuCXC_qW8QhC4fRF1fvMRqbwUbphZADtmUNUuwP4MQDhVyAYTYSAzjddOUCpPc67jfglXedfHEqqLw2PTnwIxmVtaPNVHk-zx3iymOm6RA1LgvKn9ZGxQFinV5Jf8OCuDRJnSCY7lMCLNVWr8kq0xdN-B1LE9nG9PiyShACXWAa2sj76xojZHWGL8M0ffOFOutxFgL1Fxg/2HF2qq-sJwEqlaHAkxupg0nn1YpaiOMC/18>\r\n\r\n[C10] source=gmail dataItemType=email externalId=19caa58256bcacff createdAt=2026-03-01T17:00:28.0000000+00:00 title=Start organizing your app with your team author=The Airtable Team <team@mail.airtable.com> collection=thread:Start organizing your app with your team entities=[ai_application:Airtable; person:The Airtable Team; collection:Start organizing your app with your team]\nCollaborate and start adding to your base with ease Bring your team together in your Airtable base Invite your team to your Airtable base to streamline projects and enhance communication. Together, you can share ideas, track progress, and boost productivity. Invite now <https://airtable.com/help_link/qt-shareBase> <https://airtable.com/help_link/qt-shareBase> Tie your project together with these most used features <https://support.airtable.com/docs/getting-started-with-airtable-views> Create a view With various views like grid, calendar, and Kanban, you can visualize your data in the way that works best for you. Learn more → <https://support.airtable.com/docs/getting-started-with-airtable-views> <https://support.airtable.com/docs/building-and-sharing-forms-in-airtable> Build a form Create user-friendly forms to gather information effortlessly, ensuring that your team stays organized and informed. Learn more → <https://support.airtable.com/docs/building-and-sharing-forms-in-airtable> <https://www.airtable.com/guides/build/bring-your-workflow-into-airtable> Organize a workflow Organize your data to best suit your needs and optimize your workflow mapping. Learn more → <https://www.airtable.com/guides/build/bring-your-workflow-into-airtable> <https://www.facebook.com/airtableapp/> <https://twitter.com/airtable> <https://www.instagram.com/airtable/> <https://www.linkedin.com/company/airtable> Copyright © 2026 Airtable, all rights reserved. 1 Front Street, Floor 28, San Francisco, CA 94111 Help Center <https://support.airtable.com> | Resources <https://www.airtable.com/lp/resources> | Privacy Policy <https://www.airtable.com/company/privacy> Unsubscribe from all emails <https://pages.airtable.com/Unsubscribe-from-all.html> | Unsubscribe from marketing emails <https://links.airtable.com/s/eh/i05l2U0cr8esA9sRDBYSq6iu03pukJtH472L8LG58T7Tt9-6Y6OJW5jsyUXJfbP5tjx4owtDXYiAvmHQh1Zbox1HoG5DRT337Sr-Kah1oaAPQ0g5A7p1EY4_wBfKDMpm5dXaD_i_5p1IpmUmqxrAEBb63TazV2j0pMhuTUTtJ7I_9L1mnHcp72qItxFMfs6aVjniiS7rKeAPPbhqfh_eO3THlP6kqtPkJFcLpehnA6y1mEWHnhbOW0LmPd6a19T4i3RgiAiBog/iLJCHXUk7bnk0E3ldv9zeGzHJO8dpX8H/18>\r\n\r\n[C11] source=file-system dataItemType=local_file externalId=E:\\Launch\\playwright_node\\TestFilesDirectory\\Connector_QA_Qase_Import.csv createdAt=2026-02-27T20:20:22.6755544+00:00 title=n/a collection=folder:TestFilesDirectory\nupdated\"\"\",\"\",\"\",\"\",\"15\",\"14\",\"Gmail — Delta Polling\",\"\",\"\" \"46\",\"Gmail historyId checkpoint persisted\",\"Verify checkpoint stored and used on next sync.\",\"\",\"\",\"gmail,delta,checkpoint\",\"high\",\"critical\",\"functional\",\"positive\",\"is-not-automated\",\"actual\",\"no\",\"api\",\"classic\",\"1. \"\"Run sync\"\" 2. \"\"Check connector_state table\"\"\",\"1. \"\"historyId stored and updated after each successful sync batch\"\" 2. \"\"Next sync resumes from stored ID\"\"\",\"\",\"\",\"\",\"15\",\"14\",\"Gmail — Delta Polling\",\"\",\"\" \"47\",\"Slack delta sync fetches only new messages\",\"Verify incremental sync per channel.\",\"\",\"\",\"slack,delta,incremental\",\"high\",\"critical\",\"functional\",\"positive\",\"is-not-automated\",\"actual\",\"no\",\"api\",\"classic\",\"1. \"\"Complete backfill\"\" 2. \"\"Post new messages in indexed channel\"\" 3. \"\"Trigger sync\"\"\",\"1. \"\"Only new messages since last ts fetched\"\" 2. \"\"Checkpoints per channel updated\"\"\",\"\",\"\",\"\",\"16\",\"14\",\"Slack — Delta Polling\",\"\",\"\" \"48\",\"Edited Slack messages detected in delta\",\"Verify edit detection during delta sync.\",\"\",\"\",\"slack,delta,edit\",\"medium\",\"major\",\"functional\",\"positive\",\"is-not-automated\",\"actual\",\"no\",\"api\",\"classic\",\"1. \"\"Edit a previously ingested message\"\" 2. \"\"Trigger delta sync\"\"\",\"1. \"\"Edit detected\"\" 2. \"\"New version created\"\" 3. \"\"Content hash differs from original\"\"\",\"\",\"\",\"\",\"16\",\"14\",\"Slack — Delta Polling\",\"\",\"\" \"49\",\"Deleted Slack messages handled\",\"Verify delete handling.\",\"\",\"\",\"slack,delta,delete\",\"medium\",\"major\",\"functional\",\"positive\",\"is-not-automated\",\"actual\",\"no\",\"api\",\"classic\",\"1. \"\"Delete a previously ingested message\"\" 2. \"\"Trigger delta sync\"\"\",\"1. \"\"Tombstone written or soft-delete applied\"\" 2. \"\"Message no longer appears in search results\"\" 3. \"\"Delete event logged\"\"\",\"\",\"\",\"\",\"16\",\"14\",\"Slack — Delta Polling\",\"\",\"\" \"50\",\"Drive changes.list fetches only modifications\",\"Verify incremental sync via startPageToken.\",\"\",\"\",\"drive,delta,incremental\",\"high\",\"critical\",\"functional\",\"positive\",\"is-not-automated\",\"actual\",\"no\",\"api\",\"classic\",\"1. \"\"Complete backfill\"\" 2. \"\"Edit one doc, add one new file\"\" 3. \"\"Trigger sync\"\"\",\"1.\r\n\r\n[C12] source=file-system dataItemType=local_file externalId=E:\\Launch\\playwright_node\\TestFilesDirectory\\1\\1\\1\\1\\Connector_QA_Qase_Import.csv createdAt=2026-02-27T19:35:50.1223492+00:00 title=n/a collection=folder:1\nupdated\"\"\",\"\",\"\",\"\",\"15\",\"14\",\"Gmail — Delta Polling\",\"\",\"\" \"46\",\"Gmail historyId checkpoint persisted\",\"Verify checkpoint stored and used on next sync.\",\"\",\"\",\"gmail,delta,checkpoint\",\"high\",\"critical\",\"functional\",\"positive\",\"is-not-automated\",\"actual\",\"no\",\"api\",\"classic\",\"1. \"\"Run sync\"\" 2. \"\"Check connector_state table\"\"\",\"1. \"\"historyId stored and updated after each successful sync batch\"\" 2. \"\"Next sync resumes from stored ID\"\"\",\"\",\"\",\"\",\"15\",\"14\",\"Gmail — Delta Polling\",\"\",\"\" \"47\",\"Slack delta sync fetches only new messages\",\"Verify incremental sync per channel.\",\"\",\"\",\"slack,delta,incremental\",\"high\",\"critical\",\"functional\",\"positive\",\"is-not-automated\",\"actual\",\"no\",\"api\",\"classic\",\"1. \"\"Complete backfill\"\" 2. \"\"Post new messages in indexed channel\"\" 3. \"\"Trigger sync\"\"\",\"1. \"\"Only new messages since last ts fetched\"\" 2. \"\"Checkpoints per channel updated\"\"\",\"\",\"\",\"\",\"16\",\"14\",\"Slack — Delta Polling\",\"\",\"\" \"48\",\"Edited Slack messages detected in delta\",\"Verify edit detection during delta sync.\",\"\",\"\",\"slack,delta,edit\",\"medium\",\"major\",\"functional\",\"positive\",\"is-not-automated\",\"actual\",\"no\",\"api\",\"classic\",\"1. \"\"Edit a previously ingested message\"\" 2. \"\"Trigger delta sync\"\"\",\"1. \"\"Edit detected\"\" 2. \"\"New version created\"\" 3. \"\"Content hash differs from original\"\"\",\"\",\"\",\"\",\"16\",\"14\",\"Slack — Delta Polling\",\"\",\"\" \"49\",\"Deleted Slack messages handled\",\"Verify delete handling.\",\"\",\"\",\"slack,delta,delete\",\"medium\",\"major\",\"functional\",\"positive\",\"is-not-automated\",\"actual\",\"no\",\"api\",\"classic\",\"1. \"\"Delete a previously ingested message\"\" 2. \"\"Trigger delta sync\"\"\",\"1. \"\"Tombstone written or soft-delete applied\"\" 2. \"\"Message no longer appears in search results\"\" 3. \"\"Delete event logged\"\"\",\"\",\"\",\"\",\"16\",\"14\",\"Slack — Delta Polling\",\"\",\"\" \"50\",\"Drive changes.list fetches only modifications\",\"Verify incremental sync via startPageToken.\",\"\",\"\",\"drive,delta,incremental\",\"high\",\"critical\",\"functional\",\"positive\",\"is-not-automated\",\"actual\",\"no\",\"api\",\"classic\",\"1. \"\"Complete backfill\"\" 2. \"\"Edit one doc, add one new file\"\" 3. \"\"Trigger sync\"\"\",\"1.\r\n\r\n---\r\n\r\nShowing all 12 chunks from 12 items.\r\n\r\nIMPORTANT: You MUST cite every factual claim INLINE. Use Markdown links where the link target is the chunk label (C1, C2, etc.) and the link text is a short descriptive phrase from that chunk.\r\nExample: \"The meeting was [scheduled for Friday](C1) and the [budget was approved](C3).\"\r\nNEVER list sources or references at the end of your answer. All citations must be woven into the text as inline links."
+        },
+        {
+          "role": "user",
+          "content": "Когда будет Project Sync и где он пройдет?"
+        }
+      ],
+      "timing": {
+        "planMs": 0,
+        "searchMs": 4486,
+        "retrievalTotalMs": 6827,
+        "llmMs": 2867,
+        "totalMs": 10606
+      },
+      "responseSource": "local",
+      "resolvedStrategy": "ContextFirst",
+      "reasoningContext": "Встреча Project Sync запланирована на вторник, 16 апреля 2026 года, в 10:30 утра. Мероприятие пройдет в конференц-зале Conference Room B на 3-м этаже.",
+      "routing": {
+        "categorizerResult": "Single",
+        "probeTopScore": 1,
+        "probeHitCount": 3,
+        "routingDecision": "single",
+        "categorizerMs": 1530,
+        "probeMs": 2101
+      },
+      "agent": {
+        "llmTurns": 2,
+        "toolCalls": 1,
+        "totalMs": 4486,
+        "toolExecutionMs": 2446,
+        "isPartial": false,
+        "agentSummary": "Встреча Project Sync запланирована на вторник, 16 апреля 2026 года, в 10:30 утра. Мероприятие пройдет в конференц-зале Conference Room B на 3-м этаже.",
+        "steps": [
+          {
+            "toolName": "search",
+            "toolArgsSummary": "limit=12, query=Project Sync",
+            "chunksReturned": 12,
+            "durationMs": 2446
+          }
+        ]
+      },
+      "tokenUsage": {
+        "totalInputTokens": 33030,
+        "totalOutputTokens": 380,
+        "totalTokens": 33410,
+        "categorizer": {
+          "inputTokens": 869,
+          "outputTokens": 9,
+          "totalTokens": 878
+        },
+        "planner": null,
+        "agents": {
+          "inputTokens": 26911,
+          "outputTokens": 312,
+          "totalTokens": 27223
+        },
+        "answer": {
+          "inputTokens": 5250,
+          "outputTokens": 59,
+          "totalTokens": 5309
+        }
+      },
+      "config": {
+        "categorizer": {
+          "provider": "Google",
+          "model": "gemini-3.1-flash-lite-preview",
+          "thinkingLevel": "low",
+          "webSearch": null
+        },
+        "agent": {
+          "provider": "Google",
+          "model": "gemini-3.1-flash-lite-preview",
+          "thinkingLevel": "",
+          "webSearch": null
+        },
+        "answer": {
+          "provider": "OpenAI",
+          "model": null,
+          "thinkingLevel": null,
+          "webSearch": true
+        }
+      }
+    }
+  },
+  "timestamps": {
+    "startedAt": "2026-04-06T08:47:41.882Z",
+    "finishedAt": "2026-04-06T08:48:24.285Z"
+  },
+  "failureReason": null
+}

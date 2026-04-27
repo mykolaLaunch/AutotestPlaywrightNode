@@ -24,7 +24,7 @@ const cases: EntityProfileCase[] = testCaseRepository.getEntityProfileCases();
 test.describe('Entity profile cases (Alex Carter)', () => {
   for (const tc of cases) {
     test(`${tc.id} - Entity profile answer should use synthesized profile`, async ({ request }) => {
-      const apiBaseUrl = process.env.API_BASE_URL ?? 'https://localhost:5199';
+      const apiBaseUrl = process.env.API_BASE_URL ?? 'https://localhost:5198';
       const chatRepo = new ChatRepository(request, apiBaseUrl);
       const evaluationValidator = new AnswerEvaluationValidator();
       const entityProfileValidator = new EntityProfileValidator();

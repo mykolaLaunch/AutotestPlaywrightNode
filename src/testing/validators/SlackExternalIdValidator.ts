@@ -8,6 +8,19 @@ export interface SlackDbIngestionRow {
   createdUtcMs: number;
 }
 
+export interface SlackDbIngestionOrderRow {
+  id: number;
+  createdUtcIso: string;
+  createdUtcMs: number;
+}
+
+export interface SlackNeo4jIngestionOrderRow {
+  externalId: string;
+  rawVersionId: number;
+  createdAtUtcIso: string;
+  createdAtUtcMs: number;
+}
+
 export class SlackExternalIdValidator {
   public validateSlackIdsPresentInDb(slackIds: string[], dbExternalThreads: string[]): ValidationResult {
     const errors: string[] = [];
@@ -123,6 +136,140 @@ export class SlackExternalIdValidator {
     return { errors };
   }
 
+  public validateDbRowsForCreatedUtcAndId(
+    rawRows: Array<unknown>
+  ): { items: SlackDbIngestionOrderRow[]; result: ValidationResult } {
+    const errors: string[] = [];
+    const items: SlackDbIngestionOrderRow[] = [];
+
+    for (const raw of rawRows) {
+      const row = raw as { id?: unknown; created_utc?: unknown };
+      const id = this.parseIdToNumber(row.id);
+      if (id === null) {
+        errors.push('DB row has invalid id (expected finite number).');
+        continue;
+      }
+
+      const createdUtcMs = this.parseDateToMs(row.created_utc);
+      if (createdUtcMs === null) {
+        errors.push(`DB row has invalid created_utc for id=${id}.`);
+        continue;
+      }
+
+      items.push({
+        id,
+        createdUtcIso: new Date(createdUtcMs).toISOString(),
+        createdUtcMs
+      });
+    }
+
+    this.logErrors('DB created_utc + id validation', errors);
+    return { items, result: { errors } };
+  }
+
+  public validateCreatedUtcIdOrder(
+    items: SlackDbIngestionOrderRow[],
+    minSamples: number = 5
+  ): ValidationResult {
+    const errors: string[] = [];
+
+    if (items.length < minSamples) {
+      errors.push(
+        `Not enough DB rows to validate created_utc/id order. Expected at least ${minSamples}, got ${items.length}.`
+      );
+      this.logErrors('DB created_utc/id order validation', errors);
+      return { errors };
+    }
+
+    const sorted = items
+      .slice()
+      .sort((a, b) => a.createdUtcMs - b.createdUtcMs || a.id - b.id);
+
+    for (let i = 0; i < sorted.length - 1; i += 1) {
+      const current = sorted[i];
+      const next = sorted[i + 1];
+
+      if (current.createdUtcMs < next.createdUtcMs && current.id <= next.id) {
+        errors.push(
+          `Order mismatch: created_utc ${current.createdUtcIso} (id=${current.id}) is earlier than ${next.createdUtcIso} (id=${next.id}), but id is not larger.`
+        );
+      }
+    }
+
+    this.logErrors('DB created_utc/id order validation', errors);
+    return { errors };
+  }
+
+  public validateNeo4jRowsForCreatedAtAndRawVersion(
+    rawRows: Array<unknown>
+  ): { items: SlackNeo4jIngestionOrderRow[]; result: ValidationResult } {
+    const errors: string[] = [];
+    const items: SlackNeo4jIngestionOrderRow[] = [];
+
+    for (const raw of rawRows) {
+      const row = raw as { externalId?: unknown; rawVersionId?: unknown; createdAtUtc?: unknown };
+      const externalId =
+        typeof row.externalId === 'string' && row.externalId.trim() !== ''
+          ? row.externalId
+          : '(unknown externalId)';
+
+      const rawVersionId = this.parseIdToNumber(row.rawVersionId);
+      if (rawVersionId === null) {
+        errors.push(`Neo4j row has invalid rawVersionId for externalId=${externalId}.`);
+        continue;
+      }
+
+      const createdAtUtcMs = this.parseDateToMs(row.createdAtUtc);
+      if (createdAtUtcMs === null) {
+        errors.push(`Neo4j row has invalid createdAtUtc for externalId=${externalId}.`);
+        continue;
+      }
+
+      items.push({
+        externalId,
+        rawVersionId,
+        createdAtUtcIso: new Date(createdAtUtcMs).toISOString(),
+        createdAtUtcMs
+      });
+    }
+
+    this.logErrors('Neo4j createdAtUtc + rawVersionId validation', errors);
+    return { items, result: { errors } };
+  }
+
+  public validateCreatedAtRawVersionOrder(
+    items: SlackNeo4jIngestionOrderRow[],
+    minSamples: number = 5
+  ): ValidationResult {
+    const errors: string[] = [];
+
+    if (items.length < minSamples) {
+      errors.push(
+        `Not enough Neo4j rows to validate createdAtUtc/rawVersionId order. Expected at least ${minSamples}, got ${items.length}.`
+      );
+      this.logErrors('Neo4j createdAtUtc/rawVersionId order validation', errors);
+      return { errors };
+    }
+
+    const sorted = items
+      .slice()
+      .sort((a, b) => a.createdAtUtcMs - b.createdAtUtcMs || a.rawVersionId - b.rawVersionId);
+
+    for (let i = 0; i < sorted.length - 1; i += 1) {
+      const current = sorted[i];
+      const next = sorted[i + 1];
+
+      if (current.createdAtUtcMs < next.createdAtUtcMs && current.rawVersionId <= next.rawVersionId) {
+        errors.push(
+          `Order mismatch: createdAtUtc ${current.createdAtUtcIso} (rawVersionId=${current.rawVersionId}) is earlier than ${next.createdAtUtcIso} (rawVersionId=${next.rawVersionId}), but rawVersionId is not larger.`
+        );
+      }
+    }
+
+    this.logErrors('Neo4j createdAtUtc/rawVersionId order validation', errors);
+    return { errors };
+  }
+
   private parseSlackTsToMs(value: string): number | null {
     const parsed = Number(value);
     if (!Number.isFinite(parsed)) {
@@ -150,6 +297,40 @@ export class SlackExternalIdValidator {
       }
     }
 
+    if (value && typeof value === 'object') {
+      const candidate = value as { toString?: unknown };
+      if (typeof candidate.toString === 'function') {
+        const parsed = new Date(String(value));
+        if (!Number.isNaN(parsed.getTime())) {
+          return parsed.getTime();
+        }
+      }
+    }
+
+    return null;
+  }
+
+  private parseIdToNumber(value: unknown): number | null {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return value;
+    }
+    if (typeof value === 'string' && value.trim() !== '') {
+      const parsed = Number(value);
+      if (Number.isFinite(parsed)) {
+        return parsed;
+      }
+    }
+    if (value && typeof value === 'object') {
+      const candidate = value as { toNumber?: () => number; low?: unknown; high?: unknown };
+      if (typeof candidate.toNumber === 'function') {
+        const parsed = candidate.toNumber();
+        return Number.isFinite(parsed) ? parsed : null;
+      }
+      if (typeof candidate.low === 'number' && typeof candidate.high === 'number') {
+        const parsed = candidate.high * 2 ** 32 + candidate.low;
+        return Number.isFinite(parsed) ? parsed : null;
+      }
+    }
     return null;
   }
 

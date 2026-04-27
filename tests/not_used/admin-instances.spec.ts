@@ -7,7 +7,7 @@ import { ChatValidator } from '../../src/api/validators/ChatValidator';
 test('Chat Test', async ({ request }) => {
   console.info('--- Admin instances chat test start');
   console.info('Action: fetch admin instances, then validate chat source usage.');
-  const apiBaseUrl = process.env.API_BASE_URL ?? 'https://localhost:5199';
+  const apiBaseUrl = process.env.API_BASE_URL ?? 'https://localhost:5198';
   const adminInstancesRepository = new AdminInstancesRepository(request, apiBaseUrl);
   const adminInstancesValidator = new AdminInstancesValidator();
 

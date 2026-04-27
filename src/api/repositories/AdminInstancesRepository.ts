@@ -44,6 +44,19 @@ export class AdminInstancesRepository extends BaseApiRepository {
     return this.processSuccessResponse<AdminInstance[]>(response);
   }
 
+  public async updateAdminInstanceRaw(
+    id: number,
+    data: Record<string, unknown>
+  ): Promise<APIResponse> {
+    if (!Number.isFinite(id)) {
+      throw new Error('AdminInstancesRepository.updateAdminInstanceRaw: id must be a finite number');
+    }
+    return this.request.put(`${this.getCompleteUrl()}/${id}`, {
+      headers: this.getResponseTypeHeaders(true),
+      data
+    });
+  }
+
   public async getPreparedJson(): Promise<AdminInstance[]> {
     const response = await this.getAdminInstancesRaw();
     const parsed = await this.parsePreparedFromResponse(response);
@@ -51,6 +64,34 @@ export class AdminInstancesRepository extends BaseApiRepository {
       throw new Error(parsed.errors.join(' ') || 'Failed to parse admin instances response');
     }
     return parsed.instances;
+  }
+
+  public async getFileSystemInstance(): Promise<{ instance: AdminInstance | null; errors: string[] }> {
+    const errors: string[] = [];
+    let instances: AdminInstance[];
+    try {
+      instances = await this.getPreparedJson();
+    } catch (err) {
+      errors.push(
+        `Failed to fetch admin instances: ${err instanceof Error ? err.message : String(err)}`
+      );
+      return { instance: null, errors };
+    }
+
+    const fileSystemInstances = instances.filter(
+      (instance) => instance.connectorId === 'file-system'
+    );
+
+    if (fileSystemInstances.length === 0) {
+      errors.push('No file-system instance found in /admin/instances.');
+      return { instance: null, errors };
+    }
+
+    if (fileSystemInstances.length > 1) {
+      console.info('Multiple file-system instances found; using the first.');
+    }
+
+    return { instance: fileSystemInstances[0], errors };
   }
 
   public async getGmailSettingsForUserEmail(

@@ -25,7 +25,7 @@ const cases: MixedRetrievalCase[] = testCaseRepository.getMixedRetrievalCases();
 test.describe('Mixed context + external knowledge cases', () => {
   for (const tc of cases) {
     test(`${tc.id} - Mixed retrieval should chain context and external knowledge`, async ({ request }) => {
-      const apiBaseUrl = process.env.API_BASE_URL ?? 'https://localhost:5199';
+      const apiBaseUrl = process.env.API_BASE_URL ?? 'https://localhost:5198';
       const chatRepo = new ChatRepository(request, apiBaseUrl);
       const evaluationValidator = new AnswerEvaluationValidator();
       const mixedRetrievalValidator = new MixedRetrievalValidator();

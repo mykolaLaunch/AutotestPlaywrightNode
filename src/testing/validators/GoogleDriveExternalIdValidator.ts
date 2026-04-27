@@ -14,6 +14,14 @@ export interface DriveModifiedOrderRow {
   name?: string;
 }
 
+export interface DriveModifiedNeo4jOrderRow {
+  rawVersionId: number;
+  externalId: string;
+  modifiedTimeIso: string;
+  modifiedTimeMs: number;
+  name?: string;
+}
+
 export class GoogleDriveExternalIdValidator {
   public validateFileIdsPresentInDb(fileIds: string[], dbExternalIds: string[]): ValidationResult {
     const errors: string[] = [];
@@ -202,6 +210,86 @@ export class GoogleDriveExternalIdValidator {
     return { errors };
   }
 
+  public buildDriveModifiedOrderItemsFromNeo4j(
+    neo4jRows: Array<unknown>,
+    driveDetailsById: Record<
+      string,
+      { modifiedTimeIso: string | null; name?: string | null }
+    >
+  ): { items: DriveModifiedNeo4jOrderRow[]; result: ValidationResult } {
+    const errors: string[] = [];
+    const items: DriveModifiedNeo4jOrderRow[] = [];
+
+    for (const raw of neo4jRows) {
+      const row = raw as { rawVersionId?: unknown; externalId?: unknown };
+      const rawVersionId = this.parseIdToNumber(row.rawVersionId);
+      if (rawVersionId === null) {
+        errors.push('Neo4j row has invalid rawVersionId (expected finite number).');
+        continue;
+      }
+      if (typeof row.externalId !== 'string' || row.externalId.trim() === '') {
+        errors.push(`Neo4j row has invalid externalId for rawVersionId=${rawVersionId}.`);
+        continue;
+      }
+
+      const detail = driveDetailsById[row.externalId];
+      if (!detail) {
+        errors.push(`Drive details missing for externalId=${row.externalId}.`);
+        continue;
+      }
+
+      const modifiedTimeMs = this.parseDateToMs(detail.modifiedTimeIso);
+      if (modifiedTimeMs === null) {
+        errors.push(`Drive detail has invalid modifiedTime for externalId=${row.externalId}.`);
+        continue;
+      }
+
+      items.push({
+        rawVersionId,
+        externalId: row.externalId,
+        modifiedTimeIso: new Date(modifiedTimeMs).toISOString(),
+        modifiedTimeMs,
+        name: detail.name ?? undefined
+      });
+    }
+
+    this.logErrors('Drive modifiedTime + Neo4j rawVersionId validation', errors);
+    return { items, result: { errors } };
+  }
+
+  public validateDriveModifiedTimeRawVersionIdOrder(
+    items: DriveModifiedNeo4jOrderRow[],
+    minSamples: number = 5
+  ): ValidationResult {
+    const errors: string[] = [];
+
+    if (items.length < minSamples) {
+      errors.push(
+        `Not enough items to validate Drive modifiedTime/Neo4j rawVersionId order. Expected at least ${minSamples}, got ${items.length}.`
+      );
+      this.logErrors('Drive modifiedTime/Neo4j rawVersionId order validation', errors);
+      return { errors };
+    }
+
+    const sorted = items
+      .slice()
+      .sort((a, b) => a.modifiedTimeMs - b.modifiedTimeMs || a.rawVersionId - b.rawVersionId);
+
+    for (let i = 0; i < sorted.length - 1; i += 1) {
+      const current = sorted[i];
+      const next = sorted[i + 1];
+
+      if (current.modifiedTimeMs < next.modifiedTimeMs && current.rawVersionId < next.rawVersionId) {
+        errors.push(
+          `Order mismatch: modifiedTime ${current.modifiedTimeIso} (rawVersionId=${current.rawVersionId}, externalId=${current.externalId}) is earlier than ${next.modifiedTimeIso} (rawVersionId=${next.rawVersionId}, externalId=${next.externalId}), but rawVersionId is smaller.`
+        );
+      }
+    }
+
+    this.logErrors('Drive modifiedTime/Neo4j rawVersionId order validation', errors);
+    return { errors };
+  }
+
   private parseDateToMs(value: unknown): number | null {
     if (value instanceof Date) {
       const ms = value.getTime();
@@ -231,6 +319,18 @@ export class GoogleDriveExternalIdValidator {
       const parsed = Number(value);
       if (Number.isFinite(parsed)) {
         return parsed;
+      }
+    }
+    if (value && typeof value === 'object') {
+      const candidate = value as { toNumber?: () => number; low?: unknown; high?: unknown };
+      if (typeof candidate.toNumber === 'function') {
+        const parsed = candidate.toNumber();
+        if (Number.isFinite(parsed)) {
+          return parsed;
+        }
+      }
+      if (typeof candidate.low === 'number' && typeof candidate.high === 'number') {
+        return candidate.high * 2 ** 32 + candidate.low;
       }
     }
     return null;

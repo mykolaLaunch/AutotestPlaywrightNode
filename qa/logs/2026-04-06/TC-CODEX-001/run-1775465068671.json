@@ -1,0 +1,38 @@
+{
+  "runId": "run-1775465068671",
+  "caseId": "TC-CODEX-001",
+  "caseFile": "E:\\Launch\\playwright_node\\testCases\\codex\\email-chat.json",
+  "case": {
+    "id": "TC-CODEX-001",
+    "subject": "Launch.AI Test Event: Project Sync",
+    "body": "Hello team,\n\nWe will hold the Project Sync meeting on Tuesday, April 16, 2026 at 10:30 AM. The meeting will take place in Conference Room B on the 3rd floor. Please prepare a short update on your current tasks.\n\nAgenda:\n1) Status updates (10 minutes)\n2) Risk review (10 minutes)\n3) Next milestones and owners (10 minutes)\n4) Open questions (5 minutes)\n\nIf you cannot attend, email your update by Monday 6:00 PM so it can be included. Please bring any blockers or dependencies that need escalation. We will capture action items and owners at the end of the meeting and send a summary to the team.\n\nAttendees: Alex Kim, Maria Soto, Ivan Petrov.\n\nThanks,\nQA Automation",
+    "question": "Когда будет Project Sync и где он пройдет?",
+    "command": "npx ts-node qa/cli/run-codex-case.ts --case-id TC-CODEX-001"
+  },
+  "email": {
+    "from": "mykola@launchnyc.io",
+    "to": "mykola@launchnyc.io",
+    "messageId": null,
+    "threadId": null,
+    "sentAt": null
+  },
+  "ingest": {
+    "found": false,
+    "attempts": [],
+    "matchedRowsCount": 0
+  },
+  "chat": {
+    "apiBaseUrl": "https://localhost:5199",
+    "payload": null,
+    "status": null,
+    "errors": [],
+    "answer": null,
+    "citations": null,
+    "answerLog": null
+  },
+  "timestamps": {
+    "startedAt": "2026-04-06T08:44:28.671Z",
+    "finishedAt": "2026-04-06T08:44:29.406Z"
+  },
+  "failureReason": "Gmail send errors: Failed to send Gmail message: request to https://oauth2.googleapis.com/token failed, reason: connect ECONNREFUSED 127.0.0.1:9"
+}

@@ -29,6 +29,46 @@ export abstract class Neo4jTool {
     }
   }
 
+  protected toSafeNumber(value: unknown): number | null {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return value;
+    }
+    if (typeof value === 'string' && value.trim() !== '') {
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : null;
+    }
+    if (value && typeof value === 'object') {
+      const candidate = value as { toNumber?: () => number; low?: unknown; high?: unknown };
+      if (typeof candidate.toNumber === 'function') {
+        const parsed = candidate.toNumber();
+        return Number.isFinite(parsed) ? parsed : null;
+      }
+      if (typeof candidate.low === 'number' && typeof candidate.high === 'number') {
+        return candidate.high * 2 ** 32 + candidate.low;
+      }
+    }
+    return null;
+  }
+
+  protected toDateMs(value: unknown): number | null {
+    if (value instanceof Date) {
+      const ms = value.getTime();
+      return Number.isNaN(ms) ? null : ms;
+    }
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return value;
+    }
+    if (typeof value === 'string') {
+      const parsed = new Date(value).getTime();
+      return Number.isNaN(parsed) ? null : parsed;
+    }
+    if (value && typeof value === 'object' && typeof (value as { toString?: unknown }).toString === 'function') {
+      const parsed = new Date(String(value)).getTime();
+      return Number.isNaN(parsed) ? null : parsed;
+    }
+    return null;
+  }
+
   private createDriver(): Driver {
     return neo4j.driver(this.env.uri, neo4j.auth.basic(this.env.login, this.env.password));
   }

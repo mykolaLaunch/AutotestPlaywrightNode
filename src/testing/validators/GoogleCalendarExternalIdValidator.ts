@@ -14,6 +14,14 @@ export interface CalendarUpdatedOrderRow {
   summary?: string;
 }
 
+export interface CalendarNeo4jUpdatedOrderRow {
+  rawVersionId: number;
+  externalId: string;
+  updatedTimeIso: string;
+  updatedTimeMs: number;
+  summary?: string;
+}
+
 export class GoogleCalendarExternalIdValidator {
   public validateEventIdsPresentInDb(eventIds: string[], dbExternalIds: string[]): ValidationResult {
     const errors: string[] = [];
@@ -202,6 +210,86 @@ export class GoogleCalendarExternalIdValidator {
     return { errors };
   }
 
+  public buildCalendarUpdatedOrderItemsFromNeo4j(
+    neo4jRows: Array<unknown>,
+    calendarDetailsById: Record<
+      string,
+      { updatedIso: string | null; summary?: string | null }
+    >
+  ): { items: CalendarNeo4jUpdatedOrderRow[]; result: ValidationResult } {
+    const errors: string[] = [];
+    const items: CalendarNeo4jUpdatedOrderRow[] = [];
+
+    for (const raw of neo4jRows) {
+      const row = raw as { rawVersionId?: unknown; externalId?: unknown };
+      const rawVersionId = this.parseIdToNumber(row.rawVersionId);
+      if (rawVersionId === null) {
+        errors.push('Neo4j row has invalid rawVersionId (expected finite number).');
+        continue;
+      }
+      if (typeof row.externalId !== 'string' || row.externalId.trim() === '') {
+        errors.push(`Neo4j row has invalid externalId for rawVersionId=${rawVersionId}.`);
+        continue;
+      }
+
+      const detail = calendarDetailsById[row.externalId];
+      if (!detail) {
+        errors.push(`Calendar details missing for externalId=${row.externalId}.`);
+        continue;
+      }
+
+      const updatedMs = this.parseDateToMs(detail.updatedIso);
+      if (updatedMs === null) {
+        errors.push(`Calendar detail has invalid updated time for externalId=${row.externalId}.`);
+        continue;
+      }
+
+      items.push({
+        rawVersionId,
+        externalId: row.externalId,
+        updatedTimeIso: new Date(updatedMs).toISOString(),
+        updatedTimeMs: updatedMs,
+        summary: detail.summary ?? undefined
+      });
+    }
+
+    this.logErrors('Calendar updated time + Neo4j rawVersionId validation', errors);
+    return { items, result: { errors } };
+  }
+
+  public validateCalendarUpdatedTimeRawVersionIdOrder(
+    items: CalendarNeo4jUpdatedOrderRow[],
+    minSamples: number = 5
+  ): ValidationResult {
+    const errors: string[] = [];
+
+    if (items.length < minSamples) {
+      errors.push(
+        `Not enough items to validate Calendar updatedTime/Neo4j rawVersionId order. Expected at least ${minSamples}, got ${items.length}.`
+      );
+      this.logErrors('Calendar updatedTime/Neo4j rawVersionId order validation', errors);
+      return { errors };
+    }
+
+    const sorted = items
+      .slice()
+      .sort((a, b) => a.updatedTimeMs - b.updatedTimeMs || a.rawVersionId - b.rawVersionId);
+
+    for (let i = 0; i < sorted.length - 1; i += 1) {
+      const current = sorted[i];
+      const next = sorted[i + 1];
+
+      if (current.updatedTimeMs < next.updatedTimeMs && current.rawVersionId < next.rawVersionId) {
+        errors.push(
+          `Order mismatch: updatedTime ${current.updatedTimeIso} (rawVersionId=${current.rawVersionId}, externalId=${current.externalId}) is earlier than ${next.updatedTimeIso} (rawVersionId=${next.rawVersionId}, externalId=${next.externalId}), but rawVersionId is smaller.`
+        );
+      }
+    }
+
+    this.logErrors('Calendar updatedTime/Neo4j rawVersionId order validation', errors);
+    return { errors };
+  }
+
   private parseDateToMs(value: unknown): number | null {
     if (value instanceof Date) {
       const ms = value.getTime();
@@ -231,6 +319,18 @@ export class GoogleCalendarExternalIdValidator {
       const parsed = Number(value);
       if (Number.isFinite(parsed)) {
         return parsed;
+      }
+    }
+    if (value && typeof value === 'object') {
+      const candidate = value as { toNumber?: () => number; low?: unknown; high?: unknown };
+      if (typeof candidate.toNumber === 'function') {
+        const parsed = candidate.toNumber();
+        if (Number.isFinite(parsed)) {
+          return parsed;
+        }
+      }
+      if (typeof candidate.low === 'number' && typeof candidate.high === 'number') {
+        return candidate.high * 2 ** 32 + candidate.low;
       }
     }
     return null;

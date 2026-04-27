@@ -4,6 +4,7 @@ import {GmailRepository} from "../../src/testing/repositories/GmailRepository";
 import { GmailExternalIdValidator } from '../../src/testing/validators/GmailExternalIdValidator';
 import { loadEnvOnce } from '../../src/testing/utils/envLoader';
 import { AdminInstancesRepository } from '../../src/api/repositories/AdminInstancesRepository';
+import { Neo4jDataItemRepository } from '../../src/neo4j/Neo4jDataItemRepository';
 
 test.describe('Gmail tests', { tag: ['@gmail', '@regression'] }, () => {
   test.skip('Gmail external_id coverage for mykola@launchnyc.io', async () => {
@@ -220,6 +221,158 @@ test.describe('Gmail tests', { tag: ['@gmail', '@regression'] }, () => {
     console.info('--- Gmail coverage v2 test end');
   });
 
+  test('Gmail config-based external_id coverage v2 for mykola@launchnyc.io (neo4j)', async ({ request }) => {
+    console.info('--- Gmail coverage v2 (neo4j) test start');
+    console.info('Action: load Gmail instance settings and compare filtered Gmail ids to Neo4j DataItem.externalId.');
+    loadEnvOnce();
+
+    const gmailRepository = new GmailRepository();
+    const neo4jDataItemRepository = new Neo4jDataItemRepository();
+    const validator = new GmailExternalIdValidator();
+
+    const apiBaseUrl = process.env.API_BASE_URL ?? 'https://localhost:5199';
+    const adminInstancesRepository = new AdminInstancesRepository(request, apiBaseUrl);
+
+    const errors: string[] = [];
+
+    const targetEmail = 'mykola@launchnyc.io';
+    const gmailSettingsResult = await adminInstancesRepository.getGmailSettingsForUserEmail(targetEmail);
+    errors.push(...gmailSettingsResult.errors);
+    const accountSettings = (gmailSettingsResult.settings?.account as Record<string, unknown> | undefined) ?? {};
+    const labelIds = Array.isArray(accountSettings.labelIds)
+      ? accountSettings.labelIds.filter((label) => typeof label === 'string') as string[]
+      : [];
+    const backfillDaysRaw = accountSettings.backfillDays;
+    const backfillDays = typeof backfillDaysRaw === 'number' ? backfillDaysRaw : Number(backfillDaysRaw);
+    const hasBackfillDays = Number.isFinite(backfillDays) && backfillDays > 0;
+
+    console.info(`Using Gmail settings from instance id=${gmailSettingsResult.instance?.id ?? 'unknown'}`);
+    console.info(`labelIds: ${labelIds.length > 0 ? labelIds.join(', ') : '(none)'}`);
+    console.info(`backfillDays: ${hasBackfillDays ? backfillDays : '(none)'}`);
+
+    const gmailResult = await gmailRepository.getMessageIdsByLabelsAndBackfill(
+      'me',
+      labelIds,
+      hasBackfillDays ? backfillDays : undefined
+    );
+    console.info(`Filtered Gmail message ids fetched: ${gmailResult.ids.length}`);
+
+    const neo4jRows = await neo4jDataItemRepository.getBySourceAndAccount('gmail', targetEmail);
+    console.info(`Neo4j DataItem rows fetched: ${neo4jRows.length}`);
+
+    const rawExternalIds = neo4jRows.map((row) => row.externalId);
+    const neo4jExternalIdResult = validator.validateDbExternalIds(rawExternalIds);
+    const neo4jSet = new Set(neo4jExternalIdResult.externalIds);
+    const gmailSet = new Set(gmailResult.ids);
+
+    const coverageResult = validator.validateGmailIdsPresentInDb(
+      gmailResult.ids,
+      neo4jExternalIdResult.externalIds
+    );
+
+    const missingIds = gmailResult.ids.filter((id) => !neo4jSet.has(id));
+    const missingDetailsErrors: string[] = [];
+
+    if (missingIds.length > 0) {
+      console.info(`Missing Gmail messages in Neo4j: ${missingIds.length}`);
+      const detailsResult = await gmailRepository.getMessageDetails('me', missingIds, 10);
+      missingDetailsErrors.push(...detailsResult.errors);
+
+      if (detailsResult.details.length > 0) {
+        const lines = detailsResult.details.map((detail) => {
+          const folderLabels = new Set(['INBOX', 'SENT', 'DRAFT', 'TRASH', 'SPAM', 'IMPORTANT', 'STARRED']);
+          const categoryPrefix = 'CATEGORY_';
+
+          const folders = detail.labelNames.filter((label) => folderLabels.has(label));
+          const categories = detail.labelNames.filter((label) => label.startsWith(categoryPrefix));
+
+          const folderText = folders.length > 0 ? folders.join(', ') : '(no folder)';
+          const categoryText = categories.length > 0 ? categories.join(', ') : '(no category)';
+
+          return `- folder=${folderText} | category=${categoryText} | ${detail.date} | ${detail.subject}`;
+        });
+        missingDetailsErrors.push(
+          `Missing Gmail messages in Neo4j (showing up to 10):\n${lines.join('\n')}`
+        );
+      }
+    }
+
+    const extraIds = neo4jExternalIdResult.externalIds.filter((id) => !gmailSet.has(id));
+    const extraDetailsErrors: string[] = [];
+
+    if (extraIds.length > 0) {
+      console.info(`Extra Gmail messages in Neo4j (not in filtered Gmail API results): ${extraIds.length}`);
+      const sampleIds = extraIds.slice(0, 50);
+      const detailsResult = await gmailRepository.getMessageDetails('me', sampleIds, 50);
+      const dateInfoResult = await gmailRepository.getMessageDateInfos('me', sampleIds, 50);
+
+      extraDetailsErrors.push(...detailsResult.errors);
+      extraDetailsErrors.push(...dateInfoResult.errors);
+
+      const detailsMap = new Map(detailsResult.details.map((detail) => [detail.id, detail]));
+      const dateInfoMap = new Map(dateInfoResult.items.map((info) => [info.id, info]));
+
+      const cutoffMs =
+        hasBackfillDays ? Date.now() - Math.floor(backfillDays) * 24 * 60 * 60 * 1000 : null;
+      const cutoffIso = cutoffMs ? new Date(cutoffMs).toISOString().slice(0, 10) : null;
+
+      let folderMismatches = 0;
+      let dateMismatches = 0;
+      let unknownMismatches = 0;
+
+      const lines = sampleIds.map((id) => {
+        const detail = detailsMap.get(id);
+        const dateInfo = dateInfoMap.get(id);
+        const labels = detail?.labelNames ?? [];
+        const labelOk = labelIds.length === 0 ? true : labels.some((label) => labelIds.includes(label));
+        const dateMs = dateInfo?.dateEpochMs;
+        const dateOk =
+          cutoffMs === null ? true : (typeof dateMs === 'number' ? dateMs >= cutoffMs : null);
+
+        const reasons: string[] = [];
+        if (labelOk === false) {
+          reasons.push('folder');
+          folderMismatches += 1;
+        }
+        if (dateOk === false) {
+          reasons.push('date');
+          dateMismatches += 1;
+        }
+        if (reasons.length === 0) {
+          reasons.push('unknown');
+          unknownMismatches += 1;
+        }
+
+        const labelText = labels.length > 0 ? labels.join(', ') : '(no labels)';
+        const subjectText = detail?.subject?.trim() ? detail.subject : '(no subject)';
+        const dateText = dateInfo?.dateIso ? dateInfo.dateIso.slice(0, 10) : detail?.date ?? 'unknown date';
+        const cutoffText = cutoffIso ? ` (cutoff ${cutoffIso})` : '';
+        return `- ${id} | subject=${subjectText} | labels=${labelText} | date=${dateText}${cutoffText} | reason=${reasons.join(', ')}`;
+      });
+
+      console.info(`Extra Gmail mismatch reasons (sample up to 50): folder=${folderMismatches}, date=${dateMismatches}, unknown=${unknownMismatches}`);
+      extraDetailsErrors.push(
+        `Extra Gmail messages in Neo4j (showing up to 50) with mismatch reasons:\n${lines.join('\n')}`
+      );
+    }
+
+    errors.push(
+      ...gmailResult.errors,
+      ...neo4jExternalIdResult.result.errors,
+      ...coverageResult.errors,
+      ...missingDetailsErrors,
+      ...extraDetailsErrors
+    );
+
+    if (errors.length > 0) {
+      console.info(`Validation errors: ${errors.length}`);
+      console.info(errors.join('\n'));
+    }
+
+    expect(errors, errors.join('\n')).toHaveLength(0);
+    console.info('--- Gmail coverage v2 (neo4j) test end');
+  });
+
   test(
     'Gmail duplicates ',
     { tag: ['@check-duplicates'] },
@@ -403,6 +556,188 @@ test.describe('Gmail tests', { tag: ['@gmail', '@regression'] }, () => {
           expect(latestRow.id, 'raw_item id should be greater than pre-send latest id.').toBeGreaterThan(beforeLatestId);
         }
         console.info('--- Gmail dynamic ingestion test end');
+      } finally {
+        if (messageId) {
+          const deleteResult = await gmailRepository.deleteMessage('me', messageId);
+          if (deleteResult.errors.length > 0) {
+            console.info(`Gmail cleanup errors: ${deleteResult.errors.join('\n')}`);
+          } else {
+            console.info('Gmail cleanup: message deleted.');
+          }
+        }
+      }
+    }
+  );
+
+  test(
+    'Gmail duplicates (neo4j)',
+    { tag: ['@check-duplicates', '@neo4j'] },
+    async () => {
+      console.info('--- Gmail duplicates (neo4j) test start');
+      console.info('Action: load Gmail DataItem rows from Neo4j and check for duplicate externalId.');
+      const neo4jDataItemRepository = new Neo4jDataItemRepository();
+      const targetEmail = 'mykola@launchnyc.io';
+
+      const duplicates = await neo4jDataItemRepository.getDuplicateExternalIdsBySourceAndAccount('gmail', targetEmail);
+      console.info(`Neo4j duplicate externalIds found: ${duplicates.length}`);
+
+      if (duplicates.length > 0) {
+        console.info(`Duplicate Gmail messages in Neo4j (${duplicates.length}):`);
+        const lines = duplicates.map((row) => `${row.externalId} (count=${row.count})`);
+        console.info(lines.join('\n'));
+      }
+
+      expect(duplicates.length, 'Duplicate Gmail messages found in Neo4j').toBe(0);
+      console.info('--- Gmail duplicates (neo4j) test end');
+    }
+  );
+
+  test(
+    'Gmail order by created_utc (neo4j)',
+    { tag: ['@order-test', '@neo4j'] },
+    async () => {
+      console.info('--- Gmail ingestion order (neo4j) test start');
+      console.info('Action: validate createdAtUtc increases while rawVersionId decreases on Neo4j sample.');
+      const neo4jDataItemRepository = new Neo4jDataItemRepository();
+      const targetEmail = 'mykola@launchnyc.io';
+
+      const sampleLimit = 1000;
+      const minSamples = 5;
+      const orderValidationData = await neo4jDataItemRepository.getRowsForCreatedAtRawVersionOrderValidation(
+        'gmail',
+        targetEmail,
+        sampleLimit
+      );
+      console.info(`Neo4j DataItem rows prepared for order validation: ${orderValidationData.items.length}`);
+
+      const errors: string[] = [...orderValidationData.errors];
+      const items = orderValidationData.items;
+
+      if (items.length < minSamples) {
+        errors.push(
+          `Not enough Neo4j rows to validate createdAtUtc/rawVersionId order. Expected at least ${minSamples}, got ${items.length}.`
+        );
+      }
+
+      const sorted = items.slice().sort((a, b) => a.createdAtUtcMs - b.createdAtUtcMs || a.rawVersionId - b.rawVersionId);
+      for (let i = 0; i < sorted.length - 1; i += 1) {
+        const current = sorted[i];
+        const next = sorted[i + 1];
+        if (current.createdAtUtcMs < next.createdAtUtcMs && current.rawVersionId < next.rawVersionId) {
+          errors.push(
+            `Order mismatch: createdAtUtc ${current.createdAtUtcIso} (rawVersionId=${current.rawVersionId}) is earlier than ${next.createdAtUtcIso} (rawVersionId=${next.rawVersionId}), but rawVersionId is smaller.`
+          );
+        }
+      }
+
+      if (errors.length > 0) {
+        console.info(`Validation errors: ${errors.length}`);
+        console.info(errors.join('\n'));
+      }
+
+      expect(errors, errors.join('\n')).toHaveLength(0);
+      console.info('--- Gmail ingestion order (neo4j) test end');
+    }
+  );
+
+  test(
+    'Gmail catch new message (neo4j)',
+    { tag: ['@gmail', '@dynamic', '@new-object-load', '@neo4j'] },
+    async () => {
+      console.info('--- Gmail dynamic ingestion (neo4j) test start');
+      console.info('Action: send a Gmail message and poll Neo4j DataItem by externalId.');
+      loadEnvOnce();
+      const gmailRepository = new GmailRepository();
+      const neo4jDataItemRepository = new Neo4jDataItemRepository();
+      const targetEmail = 'mykola@launchnyc.io';
+
+      const fromAddress = process.env.GMAIL_TEST_ADDRESS ?? process.env.GMAIL_TEST_FROM ?? '';
+      const toAddress = process.env.GMAIL_TEST_TO ?? fromAddress;
+
+      expect(fromAddress, 'GMAIL_TEST_ADDRESS (or GMAIL_TEST_FROM) is required.').not.toBe('');
+      expect(toAddress, 'GMAIL_TEST_TO or GMAIL_TEST_ADDRESS is required.').not.toBe('');
+
+      const beforeCount = await neo4jDataItemRepository.getCountBySourceAndAccount('gmail', targetEmail);
+      const beforeLatestCreatedAt = await neo4jDataItemRepository.getLatestCreatedAtBySourceAndAccount('gmail', targetEmail);
+      console.info(`Neo4j DataItem count before send: ${beforeCount}`);
+      console.info(`Neo4j latest createdAtUtc before send: ${beforeLatestCreatedAt ?? 'null'}`);
+      test.info().attach('neo4j_data_items_before', {
+        body: JSON.stringify({ count: beforeCount, latestCreatedAtUtc: beforeLatestCreatedAt }, null, 2),
+        contentType: 'application/json'
+      });
+
+      const timestamp = new Date().toISOString();
+      const subject = `PW-GMAIL-INGESTION-NEO4J ${timestamp}`;
+      const body = 'Playwright Gmail ingestion test content for Neo4j dynamic check.';
+
+      let messageId: string | null = null;
+
+      try {
+        const sendResult = await gmailRepository.sendMessage('me', {
+          from: fromAddress,
+          to: toAddress,
+          subject,
+          body
+        });
+
+        test.info().attach('gmail_send_result_neo4j', {
+          body: JSON.stringify(sendResult, null, 2),
+          contentType: 'application/json'
+        });
+
+        expect(sendResult.errors, sendResult.errors.join('\n')).toHaveLength(0);
+        expect(sendResult.id, 'Gmail send did not return a message id.').toBeTruthy();
+
+        messageId = sendResult.id as string;
+        console.info(`Sent Gmail message id: ${messageId}`);
+
+        const attemptsLog: Array<{ attempt: number; found: boolean; rowCount: number; at: string }> = [];
+        let matchedRows: Awaited<ReturnType<Neo4jDataItemRepository['getBySourceAndExternalId']>> = [];
+
+        const waitMs = 3000;
+        const maxAttempts = 40;
+
+        for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+          const rows = await neo4jDataItemRepository.getBySourceAccountAndExternalId('gmail', targetEmail, messageId);
+          const found = rows.length > 0;
+          console.info(`Poll attempt ${attempt}/${maxAttempts}: found=${found} rows=${rows.length}`);
+          attemptsLog.push({
+            attempt,
+            found,
+            rowCount: rows.length,
+            at: new Date().toISOString()
+          });
+
+          if (found) {
+            matchedRows = rows;
+            break;
+          }
+
+          if (attempt < maxAttempts) {
+            await new Promise((resolve) => setTimeout(resolve, waitMs));
+          }
+        }
+
+        test.info().attach('neo4j_data_items_poll_attempts', {
+          body: JSON.stringify(attemptsLog, null, 2),
+          contentType: 'application/json'
+        });
+
+        const latestRow = matchedRows[0];
+        test.info().attach('neo4j_data_items_match', {
+          body: JSON.stringify(latestRow ?? null, null, 2),
+          contentType: 'application/json'
+        });
+
+        expect(latestRow, 'No Neo4j DataItem row found for sent Gmail message.').toBeTruthy();
+        if (latestRow) {
+          expect(latestRow.externalId, 'Neo4j DataItem externalId mismatch.').toBe(messageId);
+        }
+
+        const afterCount = await neo4jDataItemRepository.getCountBySourceAndAccount('gmail', targetEmail);
+        console.info(`Neo4j DataItem count after poll: ${afterCount}`);
+        expect(afterCount, 'Neo4j DataItem count should not decrease after ingestion.').toBeGreaterThanOrEqual(beforeCount);
+        console.info('--- Gmail dynamic ingestion (neo4j) test end');
       } finally {
         if (messageId) {
           const deleteResult = await gmailRepository.deleteMessage('me', messageId);

@@ -4,6 +4,13 @@ export interface RawItemRow {
   [key: string]: unknown;
 }
 
+export interface RawItemPollAttempt {
+  attempt: number;
+  found: boolean;
+  rowCount: number;
+  at: string;
+}
+
 export class RawItemRepository extends DBTool {
   /**
    * Returns rows from raw.raw_item for a specific source_account,
@@ -149,5 +156,36 @@ export class RawItemRepository extends DBTool {
       ORDER BY ri.created_utc DESC
     `;
     return this.selectAction<RawItemRow>(sql);
+  }
+
+  public async pollBySourceAndExternalId(
+    source: string,
+    externalId: string,
+    maxAttempts: number = 40,
+    waitMs: number = 3000
+  ): Promise<{ rows: RawItemRow[]; attempts: RawItemPollAttempt[] }> {
+    const attempts: RawItemPollAttempt[] = [];
+    let rows: RawItemRow[] = [];
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+      rows = await this.getBySourceAndExternalId(source, externalId);
+      const found = rows.length > 0;
+      attempts.push({
+        attempt,
+        found,
+        rowCount: rows.length,
+        at: new Date().toISOString()
+      });
+
+      if (found) {
+        break;
+      }
+
+      if (attempt < maxAttempts) {
+        await new Promise((resolve) => setTimeout(resolve, waitMs));
+      }
+    }
+
+    return { rows, attempts };
   }
 }

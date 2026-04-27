@@ -24,7 +24,7 @@ const cases: GeneralKnowledgeCase[] = testCaseRepository.getGeneralKnowledgeCase
 test.describe('External general-knowledge cases', () => {
   for (const tc of cases) {
     test(`${tc.id} - General knowledge question should not use personal data`, async ({ request }) => {
-      const apiBaseUrl = process.env.API_BASE_URL ?? 'https://localhost:5199';
+      const apiBaseUrl = process.env.API_BASE_URL ?? 'https://localhost:5198';
       const chatRepo = new ChatRepository(request, apiBaseUrl);
       const evaluationValidator = new AnswerEvaluationValidator();
       const generalKnowledgeValidator = new GeneralKnowledgeValidator();
