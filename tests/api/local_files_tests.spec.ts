@@ -7,6 +7,8 @@ import { AdminConnectorsRepository } from '../../src/api/repositories/AdminConne
 import { AdminConnectorsValidator } from '../../src/testing/validators/AdminConnectorsValidator';
 import { AdminInstancesRepository } from '../../src/api/repositories/AdminInstancesRepository';
 import { Neo4jDataItemRepository } from '../../src/neo4j/Neo4jDataItemRepository';
+import { LocalFilesRepository } from '../../src/testing/repositories/LocalFilesRepository';
+import { LocalFilesValidator } from '../../src/testing/validators/LocalFilesValidator';
 import fs from 'fs';
 import path from 'path';
 
@@ -204,6 +206,72 @@ test.describe('Local files tests', { tag: ['@local-files', '@regression'] }, () 
       }
       expect(errors, errors.join('\n')).toHaveLength(0);
       console.info('--- Local files ingestion order (neo4j) test end');
+    }
+  );
+
+  test(
+    'Local file create and update should be reflected in DB and Neo4j',
+    { tag: ['@local-files', '@dynamic', '@update-flow'] },
+    async () => {
+      console.info('--- Local files create-update flow test start');
+      console.info('Action: create file, validate ingestion in DB+Neo4j, update file and validate new versions.');
+
+      const localFilesRepository = new LocalFilesRepository();
+      const localFilesValidator = new LocalFilesValidator();
+
+      const rootDir = 'TestFilesDirectory';
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const fileName = `pw-local-file-update-flow-${timestamp}.txt`;
+      const filePath = path.resolve(rootDir, fileName);
+
+      const initialMarker = `PW_LOCAL_INIT_${timestamp}`;
+      const updatedMarker = `PW_LOCAL_UPDATED_${timestamp}`;
+      const initialContent = `Initial content marker: ${initialMarker}`;
+      const updatedContent = `Updated content marker: ${updatedMarker}`;
+
+      await fs.promises.writeFile(filePath, initialContent, 'utf8');
+      console.info(`Created file: ${filePath}`);
+
+      await localFilesRepository.pollDbRowsByExternalId(filePath);
+      await localFilesRepository.pollNeo4jRowsByExternalId(filePath);
+      const createdDbSnapshot = await localFilesRepository.getDbSnapshotByExternalId(filePath);
+      const createdNeo4jSnapshot = await localFilesRepository.getNeo4jSnapshotByExternalId(filePath);
+      const createValidation = localFilesValidator.validateCreatedInBothStorages(
+        filePath,
+        createdDbSnapshot,
+        createdNeo4jSnapshot
+      );
+      expect(createValidation.errors, createValidation.errors.join('\n')).toHaveLength(0);
+
+      await fs.promises.writeFile(filePath, updatedContent, 'utf8');
+      console.info(`Updated file content: ${filePath}`);
+
+      const updatedDbSnapshot = await localFilesRepository.pollDbSnapshotUntilUpdatedAfter(
+        filePath,
+        createdDbSnapshot.updatedTimeMs
+      );
+      const updatedNeo4jSnapshot = await localFilesRepository.pollNeo4jSnapshotUntilContentContains(
+        filePath,
+        updatedMarker
+      );
+      console.info(
+        `Neo4j content source: label=${updatedNeo4jSnapshot.latestTextSourceLabel ?? 'n/a'}, field=${
+          updatedNeo4jSnapshot.latestTextSourceField ?? 'n/a'
+        }`
+      );
+      const updateValidation = localFilesValidator.validateUpdatedInBothStorages(
+        filePath,
+        createdDbSnapshot,
+        updatedDbSnapshot,
+        createdNeo4jSnapshot,
+        updatedNeo4jSnapshot,
+        updatedMarker
+      );
+      expect(updateValidation.errors, updateValidation.errors.join('\n')).toHaveLength(0);
+
+      await fs.promises.rm(filePath, { force: true });
+      console.info(`Cleanup complete: ${filePath}`);
+      console.info('--- Local files create-update flow test end');
     }
   );
 

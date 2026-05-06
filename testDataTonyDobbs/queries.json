@@ -1,0 +1,1501 @@
+[
+  {
+    "label": "action-items",
+    "query": "Review my Emails, Slack messages, and Meeting Minutes from the past several days to help me pull together a set of action items grouped by project.",
+    "category": "collection",
+    "suite": "core"
+  },
+  {
+    "label": "daily-digest",
+    "query": "Create a daily digest based on the emails I received today and then cross-check my Slack messages to provide the current status of each open item.",
+    "category": "collection",
+    "suite": "core"
+  },
+  {
+    "label": "active-projects",
+    "query": "I need you to find all the active projects that we are working on and then check my emails to find the latest email regarding each project.",
+    "category": "collection",
+    "suite": "core"
+  },
+  {
+    "label": "meeting-accountability",
+    "query": "Who hasn\u0027t responded on Slack to the action items from last Friday\u0027s team meeting?",
+    "category": "sequential",
+    "suite": "core"
+  },
+  {
+    "label": "sarah-docs",
+    "query": "Find the documents Sarah shared last week and tell me which projects they relate to",
+    "category": "sequential"
+  },
+  {
+    "label": "client-pricing",
+    "query": "What did the client say about pricing, and has anyone on our team responded?",
+    "category": "sequential",
+    "suite": "core"
+  },
+  {
+    "label": "roman-replies",
+    "query": "Look up what Roman sent last week, then check if any of those items have replies",
+    "category": "sequential"
+  },
+  {
+    "label": "deliverable-blame",
+    "query": "who dropped the ball on the deliverable that was due Friday?",
+    "category": "sequential"
+  },
+  {
+    "label": "lisa-standup-followup",
+    "query": "did anyone follow up on what Lisa raised in standup?",
+    "category": "sequential",
+    "suite": "core"
+  },
+  {
+    "label": "client-concerns",
+    "query": "the client mentioned some concerns last week \u2014 are we addressing them?",
+    "category": "sequential"
+  },
+  {
+    "label": "missing-doc",
+    "query": "someone was supposed to send me a doc about the migration, did they?",
+    "category": "sequential"
+  },
+  {
+    "label": "client-request-handler",
+    "query": "find out who was supposed to handle the client request and whether they did",
+    "category": "sequential"
+  },
+  {
+    "label": "maria-survey-reply",
+    "query": "Did we reply back to maria regarding the survey project?",
+    "category": "sequential"
+  },
+  {
+    "label": "long-client-followup",
+    "query": "I had a conversation with the client last Thursday where they raised some concerns about timeline and budget, and I think Sarah was supposed to follow up but I\u0027m not sure \u2014 can you check if there\u0027s been any response?",
+    "category": "sequential"
+  },
+  {
+    "label": "long-retro-tasks",
+    "query": "So last week we had that incident with the deployment pipeline and I think a few people were assigned follow-up tasks during the retro. I need to know if those tasks got done or if they\u0027re still hanging.",
+    "category": "sequential"
+  },
+  {
+    "label": "typo-fridays-mtg",
+    "query": "whos not done their stuff from fridays mtg",
+    "category": "sequential",
+    "suite": "core"
+  },
+  {
+    "label": "typo-sarah-followup",
+    "query": "did sarah evr send tht thing she was sposed to",
+    "category": "sequential"
+  },
+  {
+    "label": "typo-client-response",
+    "query": "clint complained abt somthing, did we respnd?",
+    "category": "sequential"
+  },
+  {
+    "label": "typo-deploy-fix",
+    "query": "mike said hed fix the deplymnt issue, did he?",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-roman-blocker",
+    "query": "Roman mentioned a blocker about staging credentials \u2014 was it resolved?",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-row-action-items",
+    "query": "What action items came out of the ROW Weekly Call, and have they been addressed?",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-api-migration-progress",
+    "query": "Check what was discussed about the API migration and whether there\u0027s been any progress since",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-mariana-resolution",
+    "query": "Mariana raised an issue in her email \u2014 was there a resolution?",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-mike-deployment-followup",
+    "query": "What did Mike say about the deployment, and did the team follow up?",
+    "category": "sequential",
+    "suite": "core"
+  },
+  {
+    "label": "seq-architecture-changes",
+    "query": "Find the architecture review feedback and check if the suggested changes were made",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-contract-revision",
+    "query": "Look up the client contract discussion and see if we sent a revised version",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-homepage-blockers",
+    "query": "Who was supposed to handle the homepage redesign blockers, and did they?",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-andrew-roman-response",
+    "query": "Andrew raised something on Slack \u2014 did Roman respond to it?",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-budget-finance-response",
+    "query": "Check what budget concerns were raised and whether finance responded",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-jennifer-onboarding",
+    "query": "Did Jennifer ever send the onboarding docs she promised?",
+    "category": "sequential",
+    "noData": true
+  },
+  {
+    "label": "seq-security-audit",
+    "query": "Find the security audit results and check if all critical items were patched",
+    "category": "sequential",
+    "noData": true
+  },
+  {
+    "label": "seq-demo-prep-deck",
+    "query": "Who was assigned the demo prep, and did they share the deck?",
+    "category": "sequential",
+    "noData": true
+  },
+  {
+    "label": "seq-alex-regression",
+    "query": "Alex raised a performance regression \u2014 has it been triaged?",
+    "category": "sequential",
+    "noData": true
+  },
+  {
+    "label": "seq-legal-flagged",
+    "query": "Check what the legal team flagged in their review and whether it was addressed",
+    "category": "sequential",
+    "noData": true
+  },
+  {
+    "label": "seq-qa-signoff",
+    "query": "Did the QA team sign off on the release candidate after the test run?",
+    "category": "sequential",
+    "noData": true
+  },
+  {
+    "label": "seq-data-migration-risk",
+    "query": "Someone mentioned a data migration risk \u2014 was a rollback plan created?",
+    "category": "sequential",
+    "noData": true
+  },
+  {
+    "label": "seq-compliance-deadline",
+    "query": "Find the compliance deadline that was flagged and check if we submitted on time",
+    "category": "sequential",
+    "noData": true
+  },
+  {
+    "label": "seq-vendor-renewal",
+    "query": "Did the vendor confirm the renewal terms we sent over?",
+    "category": "sequential",
+    "noData": true
+  },
+  {
+    "label": "seq-intern-code-review",
+    "query": "Check if the intern\u0027s code review feedback was incorporated before the merge",
+    "category": "sequential",
+    "noData": true
+  },
+  {
+    "label": "recent-slack",
+    "query": "Tell me about my most recent Slack messages",
+    "category": "single",
+    "noData": true
+  },
+  {
+    "label": "row-weekly",
+    "query": "Tell me about Last week\u0027s ROW Weekly Call",
+    "category": "single",
+    "suite": "core"
+  },
+  {
+    "label": "person-activity",
+    "query": "What has Roman been working on this week?",
+    "category": "single",
+    "suite": "core"
+  },
+  {
+    "label": "todays-emails",
+    "query": "Show me today\u0027s emails",
+    "category": "single",
+    "suite": "core"
+  },
+  {
+    "label": "homepage-status",
+    "query": "What\u0027s the status of the homepage redesign?",
+    "category": "single",
+    "suite": "core"
+  },
+  {
+    "label": "eng-design-compare",
+    "query": "Compare what engineering and design discussed about the new feature",
+    "category": "single"
+  },
+  {
+    "label": "standup",
+    "query": "What happened in the team standup today?",
+    "category": "single",
+    "noData": true
+  },
+  {
+    "label": "budget-emails",
+    "query": "Find all the emails about the budget and summarize the key points",
+    "category": "single"
+  },
+  {
+    "label": "thursday-notes",
+    "query": "Find the meeting notes from Thursday",
+    "category": "single"
+  },
+  {
+    "label": "slack-projects",
+    "query": "What projects has the team been discussing in Slack this month?",
+    "category": "single"
+  },
+  {
+    "label": "q3-roadmap",
+    "query": "Has anyone mentioned the Q3 roadmap in Slack or email?",
+    "category": "single"
+  },
+  {
+    "label": "yesterdays-standup",
+    "query": "What did the team discuss in yesterday\u0027s standup?",
+    "category": "single",
+    "noData": true
+  },
+  {
+    "label": "design-spec-signoff",
+    "query": "Who signed off on the design spec?",
+    "category": "single",
+    "noData": true
+  },
+  {
+    "label": "contracts-sent",
+    "query": "Check if the contracts were sent to the client",
+    "category": "single"
+  },
+  {
+    "label": "feedback-summary",
+    "query": "Summarize all the feedback we received on the proposal",
+    "category": "single"
+  },
+  {
+    "label": "meeting-themes",
+    "query": "What are the main themes across this week\u0027s meetings?",
+    "category": "single"
+  },
+  {
+    "label": "competitor-launch",
+    "query": "Pull together everything we know about the competitor launch",
+    "category": "single",
+    "noData": true
+  },
+  {
+    "label": "reorg-sentiment",
+    "query": "What\u0027s the overall sentiment in Slack about the reorg?",
+    "category": "single",
+    "noData": true
+  },
+  {
+    "label": "onboarding-feedback",
+    "query": "What did people say about the new onboarding flow?",
+    "category": "single",
+    "noData": true
+  },
+  {
+    "label": "mike-deployment",
+    "query": "anything from mike about the deployment?",
+    "category": "single"
+  },
+  {
+    "label": "vendor-approval",
+    "query": "did we ever get approval on the new vendor?",
+    "category": "single",
+    "noData": true
+  },
+  {
+    "label": "architecture-review",
+    "query": "what was the outcome of the architecture review?",
+    "category": "single"
+  },
+  {
+    "label": "board-deck",
+    "query": "is there a deck for the board meeting next week?",
+    "category": "single",
+    "noData": true
+  },
+  {
+    "label": "client-contract",
+    "query": "did the client get back to us on the contract?",
+    "category": "single"
+  },
+  {
+    "label": "api-migration",
+    "query": "what\u0027s the deal with the API migration?",
+    "category": "single"
+  },
+  {
+    "label": "vendor-latest",
+    "query": "yo what\u0027s the latest on that thing with the vendor?",
+    "category": "single",
+    "noData": true
+  },
+  {
+    "label": "mariana-email",
+    "query": "Mariana emailed me earlier, what was the outcome of that issue?",
+    "category": "single"
+  },
+  {
+    "label": "andrew-roman-slack",
+    "query": "Summarize the concern that Andrew and Roman are discussing on slack?",
+    "category": "single"
+  },
+  {
+    "label": "lisa-demo",
+    "query": "Can you check slack to see what Lisa said about the demo?",
+    "category": "single",
+    "noData": true
+  },
+  {
+    "label": "roman-bug",
+    "query": "Roman mentioned something about a bug in the sync flow, can you find it?",
+    "category": "single",
+    "noData": true
+  },
+  {
+    "label": "frag-budget",
+    "query": "budget?",
+    "category": "single",
+    "suite": "core"
+  },
+  {
+    "label": "frag-slack",
+    "query": "slack",
+    "category": "single"
+  },
+  {
+    "label": "frag-meetings",
+    "query": "meetings",
+    "category": "single"
+  },
+  {
+    "label": "frag-roman",
+    "query": "roman",
+    "category": "single"
+  },
+  {
+    "label": "frag-action-items",
+    "query": "action items",
+    "category": "single"
+  },
+  {
+    "label": "long-dashboard-design",
+    "query": "We\u0027ve been going back and forth on the design for the new dashboard \u2014 there were comments in Slack, a couple of emails, and I think it came up in Monday\u0027s standup too. Can you pull it all together so I can see where we landed?",
+    "category": "single",
+    "noData": true
+  },
+  {
+    "label": "long-reorg-summary",
+    "query": "There\u0027s been a lot of chatter in Slack about the reorg and I\u0027ve been too busy to keep up. I don\u0027t need every detail, just the key points and whether any decisions have been made that affect our team.",
+    "category": "single",
+    "noData": true
+  },
+  {
+    "label": "typo-migration",
+    "query": "any updaets on the migratoin?",
+    "category": "single",
+    "suite": "core"
+  },
+  {
+    "label": "typo-mike",
+    "query": "whats mike been upto",
+    "category": "single",
+    "noData": true
+  },
+  {
+    "label": "typo-tldr-slack",
+    "query": "gimme a tldr on slack from today",
+    "category": "single"
+  },
+  {
+    "label": "typo-blockers",
+    "query": "r there any blockers on the proj?",
+    "category": "single"
+  },
+  {
+    "label": "files-shared-this-week",
+    "query": "What files or documents were shared in Slack this week?",
+    "category": "single"
+  },
+  {
+    "label": "client-proposal-reaction",
+    "query": "What was the client\u0027s reaction to the proposal we sent?",
+    "category": "single"
+  },
+  {
+    "label": "latest-budget-update",
+    "query": "What\u0027s the most recent update on the budget?",
+    "category": "single"
+  },
+  {
+    "label": "eng-channel-today",
+    "query": "What\u0027s been happening in the engineering Slack channel today?",
+    "category": "single"
+  },
+  {
+    "label": "sarah-client-discussion",
+    "query": "Summarize the conversation between Dana and the client about the timeline",
+    "category": "single"
+  },
+  {
+    "label": "emails-early-week",
+    "query": "Pull up the emails from Monday through Wednesday about the project",
+    "category": "single"
+  },
+  {
+    "label": "vendor-contact-frequency",
+    "query": "How many times did the vendor reach out this week?",
+    "category": "single"
+  },
+  {
+    "label": "channel-activity",
+    "query": "What\u0027s happened in each of my Slack channels this week?",
+    "category": "collection",
+    "suite": "core"
+  },
+  {
+    "label": "project-status",
+    "query": "Find all active projects and give me a status update on each one.",
+    "category": "collection"
+  },
+  {
+    "label": "inbox-by-project",
+    "query": "Go through my inbox from the last 3 days and organize everything by project.",
+    "category": "collection"
+  },
+  {
+    "label": "slack-threads",
+    "query": "Summarize each Slack thread from this week in the engineering channel",
+    "category": "collection"
+  },
+  {
+    "label": "open-issues",
+    "query": "Give me a status update on every open issue",
+    "category": "collection"
+  },
+  {
+    "label": "meeting-decisions",
+    "query": "What are all the decisions from this week\u0027s meetings, organized by meeting?",
+    "category": "collection"
+  },
+  {
+    "label": "catch-up",
+    "query": "Catch me up on what I missed today",
+    "category": "collection",
+    "suite": "core"
+  },
+  {
+    "label": "meeting-owners",
+    "query": "Who is responsible for each action item from Monday\u0027s meeting?",
+    "category": "collection"
+  },
+  {
+    "label": "open-prs",
+    "query": "What are the open pull requests and who\u0027s assigned to each one?",
+    "category": "collection"
+  },
+  {
+    "label": "weekly-rundown",
+    "query": "Give me a rundown of my Slack messages, emails, and Drive files from this week",
+    "category": "collection"
+  },
+  {
+    "label": "email-review",
+    "query": "Review all my emails from this week and flag anything that needs a response",
+    "category": "collection"
+  },
+  {
+    "label": "meeting-completion",
+    "query": "Find the action items from each meeting this week and check who\u0027s completed theirs",
+    "category": "collection"
+  },
+  {
+    "label": "email-threads",
+    "query": "Summarize each email thread I received this week",
+    "category": "collection"
+  },
+  {
+    "label": "pr-status",
+    "query": "Go through the open PRs and summarize the status of each",
+    "category": "collection"
+  },
+  {
+    "label": "email-attention",
+    "query": "Go through my emails from this week and tell me what needs attention",
+    "category": "collection",
+    "suite": "core"
+  },
+  {
+    "label": "weekly-meetings-breakdown",
+    "query": "Break down this week\u0027s meetings for me",
+    "category": "collection"
+  },
+  {
+    "label": "active-projects-status",
+    "query": "What\u0027s the latest on our active projects?",
+    "category": "collection"
+  },
+  {
+    "label": "ticket-blockers",
+    "query": "Check all the open tickets and tell me if any are blocked",
+    "category": "collection"
+  },
+  {
+    "label": "slack-urgent-scan",
+    "query": "Scan my Slack messages and let me know if anything is urgent",
+    "category": "collection"
+  },
+  {
+    "label": "channel-walkthrough",
+    "query": "Walk me through what happened in each channel today",
+    "category": "collection"
+  },
+  {
+    "label": "important-emails",
+    "query": "Are there any important emails I should know about?",
+    "category": "collection"
+  },
+  {
+    "label": "out-since-wednesday",
+    "query": "I\u0027ve been out since Wednesday, what do I need to deal with?",
+    "category": "collection"
+  },
+  {
+    "label": "workstreams-status",
+    "query": "how are things going across the different workstreams?",
+    "category": "collection"
+  },
+  {
+    "label": "whats-on-fire",
+    "query": "what\u0027s on fire right now?",
+    "category": "collection"
+  },
+  {
+    "label": "meeting-prep",
+    "query": "I have back-to-back meetings tomorrow, prep me on the context for all of them",
+    "category": "collection"
+  },
+  {
+    "label": "fell-through-cracks",
+    "query": "anything fall through the cracks this week?",
+    "category": "collection"
+  },
+  {
+    "label": "items-check",
+    "query": "can you check if there are updates on each of the items from last week?",
+    "category": "collection"
+  },
+  {
+    "label": "everyone-today",
+    "query": "what\u0027s everyone working on today?",
+    "category": "collection"
+  },
+  {
+    "label": "daily-digest-slack",
+    "query": "Provide a daily digest of the open issues from slack today",
+    "category": "collection"
+  },
+  {
+    "label": "vendor-emails",
+    "query": "Go through the emails from the vendor and tell me what we need to respond to",
+    "category": "collection"
+  },
+  {
+    "label": "long-multi-project",
+    "query": "I know there are a bunch of things in flight right now \u2014 the API migration, the onboarding redesign, the vendor evaluation, and probably some other stuff I\u0027m forgetting. Can you give me a quick status on all of them?",
+    "category": "collection"
+  },
+  {
+    "label": "long-two-teams",
+    "query": "I\u0027ve been working with two teams \u2014 the backend folks and the design crew \u2014 and each group has been sending me updates in Slack and email. I need you to go through each team\u0027s messages and give me a consolidated summary of where things stand per team.",
+    "category": "collection"
+  },
+  {
+    "label": "typo-urgent-scan",
+    "query": "pls check evrything from ths wk and lmk whats urgnt",
+    "category": "collection",
+    "suite": "core"
+  },
+  {
+    "label": "typo-all-projects-status",
+    "query": "whats goin on w each of the projcts rn",
+    "category": "collection"
+  },
+  {
+    "label": "typo-inbox-catchup",
+    "query": "go thru my inbox n tell me wats important",
+    "category": "collection"
+  },
+  {
+    "label": "typo-meeting-recap",
+    "query": "gimme a recap of all the mtgs this wk",
+    "category": "collection"
+  },
+  {
+    "label": "single-pentest-results",
+    "query": "What did the security team say about the penetration test results?",
+    "category": "single",
+    "noData": true
+  },
+  {
+    "label": "single-office-relocation",
+    "query": "Has anyone shared details about the office relocation?",
+    "category": "single",
+    "noData": true
+  },
+  {
+    "label": "single-patent-filing",
+    "query": "What\u0027s the status of the patent filing Lisa mentioned?",
+    "category": "single",
+    "noData": true
+  },
+  {
+    "label": "single-insurance-renewal",
+    "query": "Did we hear back about the insurance renewal?",
+    "category": "single",
+    "noData": true
+  },
+  {
+    "label": "single-retry-offsite",
+    "query": "Were there any notes from the team offsite planning session?",
+    "category": "single"
+  },
+  {
+    "label": "single-retry-supplier",
+    "query": "What was the outcome of the supplier audit?",
+    "category": "single"
+  },
+  {
+    "label": "single-retry-warehouse",
+    "query": "Has anyone posted updates about the warehouse inventory?",
+    "category": "single"
+  },
+  {
+    "label": "seq-nda-signoff",
+    "query": "Did the legal team sign off on the NDA and send it back to the vendor?",
+    "category": "sequential",
+    "noData": true
+  },
+  {
+    "label": "seq-pentest-remediation",
+    "query": "The security team found issues in the pen test \u2014 have they been fixed?",
+    "category": "sequential",
+    "noData": true
+  },
+  {
+    "label": "seq-relocation-survey",
+    "query": "HR sent out a relocation survey \u2014 did the team fill it out?",
+    "category": "sequential",
+    "noData": true
+  },
+  {
+    "label": "seq-patent-prior-art",
+    "query": "Someone was supposed to research prior art for the patent \u2014 did they report back?",
+    "category": "sequential",
+    "noData": true
+  },
+  {
+    "label": "coll-support-escalations",
+    "query": "Summarize each of the customer support escalations from this week",
+    "category": "collection",
+    "noData": true
+  },
+  {
+    "label": "coll-hiring-pipeline",
+    "query": "What\u0027s the status of each candidate in the hiring pipeline?",
+    "category": "collection",
+    "noData": true
+  },
+  {
+    "label": "coll-marketing-campaigns",
+    "query": "Break down the marketing campaigns we\u0027re running and tell me how each is performing",
+    "category": "collection",
+    "noData": true
+  },
+  {
+    "label": "coll-infra-alerts",
+    "query": "Go through the infrastructure alerts from today and tell me which ones are resolved",
+    "category": "collection",
+    "noData": true
+  },
+  {
+    "label": "coll-sales-proposals",
+    "query": "Review the sales proposals we sent out this week and flag any that need follow-up",
+    "category": "collection",
+    "noData": true
+  },
+  {
+    "label": "coll-training-sessions",
+    "query": "Give me an update on each of the training sessions scheduled for this month",
+    "category": "collection",
+    "noData": true
+  },
+  {
+    "label": "coll-perf-reviews",
+    "query": "Walk me through the performance review submissions and tell me who hasn\u0027t completed theirs",
+    "category": "collection",
+    "noData": true
+  },
+  {
+    "label": "coll-partner-integrations",
+    "query": "Check each of the partner integration requests and tell me where they stand",
+    "category": "collection",
+    "noData": true
+  },
+  {
+    "label": "coll-unreplied-emails",
+    "query": "Go through my emails from this week and show me the ones I haven\u0027t replied to",
+    "category": "collection",
+    "suite": "core"
+  },
+  {
+    "label": "coll-urgent-ranked",
+    "query": "What are my most urgent open items right now, ranked by priority?",
+    "category": "collection"
+  },
+  {
+    "label": "coll-projects-on-track",
+    "query": "For each active project, tell me if it\u0027s on track or at risk",
+    "category": "collection"
+  },
+  {
+    "label": "coll-stale-prs",
+    "query": "Which of the open PRs have been waiting the longest for review?",
+    "category": "collection"
+  },
+  {
+    "label": "coll-untouched-actions",
+    "query": "Go through this week\u0027s action items and show me only the ones nobody has touched",
+    "category": "collection"
+  },
+  {
+    "label": "coll-slack-by-project",
+    "query": "Organize my Slack messages from this week by which project they relate to",
+    "category": "collection"
+  },
+  {
+    "label": "coll-team-output",
+    "query": "For each team member, what have they shipped or completed this week?",
+    "category": "collection"
+  },
+  {
+    "label": "coll-group-by-person",
+    "query": "What has each team member been up to this week across Slack and email?",
+    "category": "collection"
+  },
+  {
+    "label": "coll-group-by-date",
+    "query": "Give me a day-by-day breakdown of what happened this week",
+    "category": "collection"
+  },
+  {
+    "label": "coll-group-by-source",
+    "query": "Break down my updates by source \u2014 what came from Slack, what came from email, and what came from meetings",
+    "category": "collection"
+  },
+  {
+    "label": "coll-group-by-urgency",
+    "query": "Go through everything from today and organize it by urgency \u2014 what needs immediate attention vs what can wait",
+    "category": "collection"
+  },
+  {
+    "label": "seq-timeline-drift",
+    "query": "how did the project timeline change between last week\u0027s planning session and the latest update?",
+    "category": "sequential",
+    "noData": true
+  },
+  {
+    "label": "seq-estimate-vs-actual",
+    "query": "the budget estimate was revised at some point \u2014 what was it before and what is it now?",
+    "category": "sequential",
+    "noData": true
+  },
+  {
+    "label": "seq-standup-vs-done",
+    "query": "Compare what was committed to in Monday\u0027s standup with what actually got done by Friday",
+    "category": "sequential",
+    "noData": true
+  },
+  {
+    "label": "seq-scope-since-kickoff",
+    "query": "How has the project scope changed since the original kickoff?",
+    "category": "sequential",
+    "noData": true
+  },
+  {
+    "label": "seq-requirements-added",
+    "query": "What requirements were added or changed after the initial client meeting?",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-delay-cause",
+    "query": "the release got pushed back \u2014 what caused the delay?",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-escalation-trigger",
+    "query": "the client escalated last week \u2014 what led up to it?",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-missed-deadline",
+    "query": "We missed the deadline on the deliverable \u2014 what went wrong?",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-staging-outage",
+    "query": "The staging environment went down last week \u2014 what happened leading up to it?",
+    "category": "sequential",
+    "noData": true
+  },
+  {
+    "label": "seq-meeting-rescheduled",
+    "query": "The client meeting got rescheduled twice \u2014 why?",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-meeting-to-slack",
+    "query": "find what was decided in Thursday\u0027s meeting and check if it was shared on Slack",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-email-vs-spec",
+    "query": "look up the requirements from the client email and check if they match what\u0027s in the design doc",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-slack-to-email",
+    "query": "Roman raised something on Slack about the vendor \u2014 check if there\u0027s a follow-up email about it",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-verify-deploy",
+    "query": "the team said the hotfix was deployed Tuesday \u2014 can you verify that?",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-vendor-sent-check",
+    "query": "the vendor says they sent the updated contract \u2014 check if we actually received it",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-kickoff-vs-now",
+    "query": "find what was agreed in the project kickoff and tell me how much has actually been delivered",
+    "category": "sequential",
+    "noData": true
+  },
+  {
+    "label": "seq-multihop-meeting-assignments",
+    "query": "Find the action items from Monday\u0027s meeting, check who was assigned each one, and see if they\u0027ve posted updates",
+    "category": "sequential",
+    "suite": "core"
+  },
+  {
+    "label": "seq-multihop-bug-fix-review",
+    "query": "Find the bug Nathan reported, check who was assigned to fix it, and see if the fix has been reviewed",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-multihop-requirements-pipeline",
+    "query": "Look up the requirements the client emailed, check if the design doc addresses them, and see if engineering has started implementation",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-multihop-issue-fix-deploy",
+    "query": "Find who raised the performance issue, what fix was proposed, and whether it was deployed",
+    "category": "sequential",
+    "noData": true
+  },
+  {
+    "label": "seq-deadend-decision-owner-started",
+    "query": "Find what was decided about the database migration, identify who was put in charge, and check if they\u0027ve started work",
+    "category": "sequential",
+    "noData": true
+  },
+  {
+    "label": "seq-deadend-escalation-response-action",
+    "query": "Find the issue that got escalated to management, check what their response was, and whether the team acted on it",
+    "category": "sequential",
+    "noData": true
+  },
+  {
+    "label": "seq-deadend-review-assignee-pushed",
+    "query": "Find the code review comments from last week, check who was asked to address them, and see if the fixes were pushed",
+    "category": "sequential",
+    "noData": true
+  },
+  {
+    "label": "seq-deadend-outage-owner-postmortem",
+    "query": "Find what caused the last outage, who was responsible for the postmortem, and whether the postmortem was published",
+    "category": "sequential",
+    "noData": true
+  },
+  {
+    "label": "boundary-ss-takeaways",
+    "query": "find the architecture review discussion and tell me the key takeaways",
+    "category": "single"
+  },
+  {
+    "label": "boundary-ss-breakdown",
+    "query": "what did the client say about the timeline and break it down for me",
+    "category": "single"
+  },
+  {
+    "label": "boundary-ss-explain",
+    "query": "can you find what Roman said about the bug and explain what it means for the release?",
+    "category": "single"
+  },
+  {
+    "label": "boundary-ss-incorporated",
+    "query": "was the design feedback incorporated into the latest version?",
+    "category": "sequential"
+  },
+  {
+    "label": "boundary-sc-pr-reviewers",
+    "query": "look at each open PR and tell me if the reviewer has responded",
+    "category": "collection"
+  },
+  {
+    "label": "boundary-sc-blockers",
+    "query": "find the blockers from the standup and check if any have been resolved since",
+    "category": "sequential"
+  },
+  {
+    "label": "boundary-sc-decisions",
+    "query": "what were the decisions from the planning meeting and have they been communicated to the team?",
+    "category": "sequential"
+  },
+  {
+    "label": "boundary-sc-pending",
+    "query": "go through this week\u0027s action items and tell me which are still pending",
+    "category": "collection"
+  },
+  {
+    "label": "frag-all-projects",
+    "query": "all projects",
+    "category": "collection"
+  },
+  {
+    "label": "frag-each-channel",
+    "query": "each channel today",
+    "category": "collection"
+  },
+  {
+    "label": "frag-everything-week",
+    "query": "everything this week",
+    "category": "collection"
+  },
+  {
+    "label": "calendar-tomorrow",
+    "query": "What meetings do I have on my calendar tomorrow?",
+    "category": "single",
+    "noData": true,
+    "suite": "core"
+  },
+  {
+    "label": "calendar-this-week",
+    "query": "What meetings do I have on my calendar this week?",
+    "category": "single",
+    "noData": true
+  },
+  {
+    "label": "calendar-today",
+    "query": "What\u0027s on my calendar today?",
+    "category": "single",
+    "noData": true
+  },
+  {
+    "label": "calendar-specific",
+    "query": "Do I have a meeting with Sarah this week?",
+    "category": "single",
+    "noData": true
+  },
+  {
+    "label": "calendar-next-monday",
+    "query": "What do I have scheduled for next Monday?",
+    "category": "single",
+    "noData": true
+  },
+  {
+    "label": "frag-calendar",
+    "query": "calendar",
+    "category": "single",
+    "noData": true
+  },
+  {
+    "label": "calendar-free-time",
+    "query": "When am I free tomorrow afternoon?",
+    "category": "single",
+    "noData": true
+  },
+  {
+    "label": "calendar-conflicts",
+    "query": "Do I have any scheduling conflicts this week?",
+    "category": "single",
+    "noData": true
+  },
+  {
+    "label": "calendar-meeting-hours",
+    "query": "How much time do I have in meetings tomorrow?",
+    "category": "single",
+    "noData": true
+  },
+  {
+    "label": "calendar-recurring",
+    "query": "When is the next team standup?",
+    "category": "single",
+    "noData": true
+  },
+  {
+    "label": "calendar-location",
+    "query": "Which of my meetings this week are on Zoom vs in-person?",
+    "category": "collection",
+    "noData": true
+  },
+  {
+    "label": "calendar-coll-prep",
+    "query": "What are my meetings tomorrow and what do I need to prep for each one?",
+    "category": "collection",
+    "noData": true
+  },
+  {
+    "label": "calendar-coll-attendees",
+    "query": "List all my meetings this week and who\u0027s attending each",
+    "category": "collection",
+    "noData": true
+  },
+  {
+    "label": "calendar-coll-context",
+    "query": "Go through my calendar for today and pull together the context for each meeting",
+    "category": "collection",
+    "noData": true
+  },
+  {
+    "label": "calendar-coll-gaps",
+    "query": "Go through my calendar tomorrow and tell me where I have gaps between meetings",
+    "category": "collection",
+    "noData": true
+  },
+  {
+    "label": "calendar-coll-durations",
+    "query": "List each of my meetings this week and how long each one is",
+    "category": "collection",
+    "noData": true
+  },
+  {
+    "label": "calendar-coll-action-needed",
+    "query": "Look at each meeting on my calendar today and tell me which ones I need to prep something for",
+    "category": "collection",
+    "noData": true
+  },
+  {
+    "label": "calendar-seq-rescheduled",
+    "query": "The meeting with the client got rescheduled \u2014 when is it now?",
+    "category": "sequential",
+    "noData": true
+  },
+  {
+    "label": "calendar-seq-notes-sent",
+    "query": "I had a planning meeting on Monday \u2014 did anyone send out the notes?",
+    "category": "sequential",
+    "noData": true
+  },
+  {
+    "label": "calendar-seq-deck-ready",
+    "query": "Check my calendar for the board meeting and see if the deck has been shared",
+    "category": "sequential",
+    "noData": true
+  },
+  {
+    "label": "calendar-seq-conflict-resolve",
+    "query": "I have a conflict on Thursday \u2014 what are the meetings and which one can I move?",
+    "category": "sequential",
+    "noData": true
+  },
+  {
+    "label": "calendar-seq-recurring-changed",
+    "query": "The weekly sync got moved \u2014 when is it now and did anyone announce the change?",
+    "category": "sequential",
+    "noData": true
+  },
+  {
+    "label": "calendar-seq-followup-scheduled",
+    "query": "We discussed scheduling a follow-up after the client call \u2014 was it actually added to the calendar?",
+    "category": "sequential",
+    "noData": true
+  },
+  {
+    "label": "seq-deploy-date-discussion",
+    "query": "When was the last production deployment? Check what was discussed on Slack around that time.",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-outage-preceding-activity",
+    "query": "Find when the outage started and check what the team was discussing right before it happened",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-billing-owner-update",
+    "query": "Who owns the billing module? Check if they\u0027ve posted any updates this week.",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-onboarding-lead-schedule",
+    "query": "Find who was assigned to lead the new hire onboarding and see if they\u0027ve shared the schedule",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-checkout-bug-reporter",
+    "query": "A bug was logged about the checkout flow \u2014 who reported it and have they confirmed the fix?",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-budget-overspend",
+    "query": "What was the approved budget for the redesign? Check if any expenses have gone over that amount.",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-client-deadline-communicated",
+    "query": "Find the deadline the client gave us for the deliverable and check if it was communicated to the team",
+    "category": "sequential"
+  },
+  {
+    "label": "single-sarah-sent-emails",
+    "query": "What emails did Sarah send this week?",
+    "category": "single"
+  },
+  {
+    "label": "single-roman-slack-posts",
+    "query": "Show me everything Roman has posted on Slack",
+    "category": "single"
+  },
+  {
+    "label": "single-backend-channel",
+    "query": "What\u0027s been discussed in the backend channel this week?",
+    "category": "single"
+  },
+  {
+    "label": "coll-eng-channel-threads",
+    "query": "Summarize each thread in the engineering channel from today",
+    "category": "collection"
+  },
+  {
+    "label": "single-meeting-notes-only",
+    "query": "Show me only the meeting notes from this week",
+    "category": "single"
+  },
+  {
+    "label": "single-monday-afternoon",
+    "query": "What emails and messages came in Monday afternoon?",
+    "category": "single"
+  },
+  {
+    "label": "seq-filter-roman-backend",
+    "query": "Did Roman post anything in the backend channel about the deployment, and has anyone responded?",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-filter-tuesday-deadline",
+    "query": "Find the email that came in Tuesday morning about the deadline and check if we responded by end of day",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-filter-meeting-notes-drive",
+    "query": "Find the meeting notes from the planning session and check if they were shared as a document in Drive",
+    "category": "sequential"
+  },
+  {
+    "label": "single-design-spec-latest",
+    "query": "Where\u0027s the latest version of the design spec?",
+    "category": "single"
+  },
+  {
+    "label": "single-onboarding-doc-lisa",
+    "query": "Find the onboarding document Lisa created",
+    "category": "single"
+  },
+  {
+    "label": "coll-docs-shared-week",
+    "query": "What documents were updated or shared this week? Summarize each one.",
+    "category": "collection"
+  },
+  {
+    "label": "single-presentation-deck",
+    "query": "Has anyone shared a slide deck for the upcoming presentation?",
+    "category": "single"
+  },
+  {
+    "label": "coll-channel-important-today",
+    "query": "Go through each Slack channel I\u0027m in and tell me if anything important happened today",
+    "category": "collection"
+  },
+  {
+    "label": "coll-meeting-people-followup",
+    "query": "Check each person mentioned in Monday\u0027s meeting notes and see if they\u0027ve sent any follow-up emails",
+    "category": "collection"
+  },
+  {
+    "label": "coll-issues-slack-discussion",
+    "query": "Review each of the open issues and check if there\u0027s been any discussion about them in Slack",
+    "category": "collection"
+  },
+  {
+    "label": "seq-sparse-standup-followup",
+    "query": "Check what was raised in the team standup and see if anyone posted a follow-up on Slack",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-sparse-email-attachment",
+    "query": "Find the email about the project timeline and check if the attachment was shared on Slack",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-sparse-meeting-doc-created",
+    "query": "Find the decisions from Monday\u0027s meeting and check if a summary doc was created in Drive",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-sparse-bug-release-notes",
+    "query": "Find the bug that was reported last week and check if it made it into the release notes",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-sparse-proposal-response",
+    "query": "Look up the proposal we sent to the client and check if they responded",
+    "category": "sequential"
+  },
+  {
+    "label": "frag-seq-mike-done",
+    "query": "did mike do it",
+    "category": "sequential"
+  },
+  {
+    "label": "frag-seq-followup",
+    "query": "any follow-up?",
+    "category": "sequential",
+    "suite": "core"
+  },
+  {
+    "label": "frag-seq-reply-yet",
+    "query": "did they reply yet",
+    "category": "sequential"
+  },
+  {
+    "label": "frag-seq-resolved",
+    "query": "that bug resolved?",
+    "category": "sequential"
+  },
+  {
+    "label": "boundary-sinc-slack-email-week",
+    "query": "What\u0027s been happening in Slack and email this week?",
+    "category": "single"
+  },
+  {
+    "label": "boundary-sinc-team-updates",
+    "query": "Any updates from the team?",
+    "category": "single"
+  },
+  {
+    "label": "boundary-sinc-meeting-takeaways",
+    "query": "What came out of this week\u0027s meetings?",
+    "category": "single"
+  },
+  {
+    "label": "boundary-sinc-all-convos",
+    "query": "Summarize all the conversations I had this week",
+    "category": "collection"
+  },
+  {
+    "label": "boundary-sinc-every-email",
+    "query": "Give me the highlights from every email today",
+    "category": "collection"
+  },
+  {
+    "label": "seq-real-roman-pr",
+    "query": "Roman said he\u0027d merge the PR by end of day \u2014 did he?",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-real-client-notes",
+    "query": "I had a call with the client yesterday, did anyone send out the notes?",
+    "category": "sequential"
+  },
+  {
+    "label": "seq-real-sarah-budget",
+    "query": "Sarah was going to update the budget spreadsheet after the finance meeting \u2014 did she?",
+    "category": "sequential"
+  },
+  {
+    "label": "coll-real-missed-morning",
+    "query": "I was in meetings all morning, what did I miss across Slack and email?",
+    "category": "collection"
+  },
+  {
+    "label": "coll-real-standup-prep",
+    "query": "I need to run standup in 10 minutes, give me a quick update on what each person has been working on",
+    "category": "collection"
+  },
+  {
+    "label": "coll-real-monday-catchup",
+    "query": "It\u0027s Monday morning, catch me up on everything from the weekend and early today",
+    "category": "collection"
+  },
+  {
+    "label": "boundary-mh-sprint-tasks",
+    "query": "Look at the tasks from the sprint planning and check which ones are actually done",
+    "category": "sequential"
+  },
+  {
+    "label": "boundary-mh-review-items",
+    "query": "Find the items flagged in the code review and see if each one has been addressed",
+    "category": "collection"
+  },
+  {
+    "label": "boundary-mh-client-actions",
+    "query": "Check what was raised in the client call and whether the team has acted on any of it",
+    "category": "sequential"
+  },
+  {
+    "label": "direct-sprint-retro",
+    "query": "how should I structure a sprint retrospective?",
+    "category": "direct",
+    "suite": "core"
+  },
+  {
+    "label": "direct-greeting",
+    "query": "good morning!",
+    "category": "direct",
+    "suite": "core"
+  },
+  {
+    "label": "direct-capabilities",
+    "query": "what can you do?",
+    "category": "direct",
+    "suite": "core"
+  },
+  {
+    "label": "direct-draft-ooo",
+    "query": "can you help me draft an out-of-office message?",
+    "category": "direct"
+  },
+  {
+    "label": "direct-thanks",
+    "query": "thanks, that\u0027s all I needed",
+    "category": "direct"
+  },
+  {
+    "label": "direct-okrs",
+    "query": "what\u0027s the difference between OKRs and KPIs?",
+    "category": "direct"
+  },
+  {
+    "label": "good-user-story",
+    "query": "what makes a good user story?",
+    "category": "direct",
+    "categorizerOnly": true
+  },
+  {
+    "label": "executive-summary",
+    "query": "how do I write a good executive summary?",
+    "category": "direct",
+    "categorizerOnly": true
+  },
+  {
+    "label": "raci-framework",
+    "query": "explain the RACI framework",
+    "category": "direct",
+    "categorizerOnly": true
+  },
+  {
+    "label": "lgtm-meaning",
+    "query": "what does LGTM mean in code reviews?",
+    "category": "direct",
+    "categorizerOnly": true
+  },
+  {
+    "label": "good-agenda",
+    "query": "what\u0027s a good agenda format for a 1:1?",
+    "category": "direct",
+    "categorizerOnly": true
+  },
+  {
+    "label": "hi-there",
+    "query": "hi there",
+    "category": "direct",
+    "categorizerOnly": true
+  },
+  {
+    "label": "how-does-this-work",
+    "query": "how does this work?",
+    "category": "direct",
+    "categorizerOnly": true
+  },
+  {
+    "label": "which-approach",
+    "query": "which approach should I go with?",
+    "category": "direct",
+    "categorizerOnly": true
+  },
+  {
+    "label": "nice-work",
+    "query": "nice work, that was really helpful",
+    "category": "direct",
+    "categorizerOnly": true
+  },
+  {
+    "label": "summarize-tips",
+    "query": "any tips for running a better standup?",
+    "category": "direct",
+    "categorizerOnly": true
+  },
+  {
+    "label": "draft-followup-email",
+    "query": "can you help me write a follow-up email to a client?",
+    "category": "direct",
+    "categorizerOnly": true
+  },
+  {
+    "label": "frag-question-marks",
+    "query": "???",
+    "category": "direct",
+    "categorizerOnly": true
+  },
+  {
+    "label": "frag-help",
+    "query": "help",
+    "category": "direct",
+    "categorizerOnly": true
+  },
+  {
+    "label": "typo-kanban",
+    "query": "wuts a kanban bord",
+    "category": "direct",
+    "categorizerOnly": true
+  }
+]

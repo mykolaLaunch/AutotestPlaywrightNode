@@ -1,0 +1,280 @@
+{
+  "runId": "run-1775492661057",
+  "caseId": "TC-CODEX-001",
+  "caseFile": "E:\\Launch\\playwright_node\\qa\\codex\\cases\\gmail-chat\\TC-CODEX-001.json",
+  "case": {
+    "id": "TC-CODEX-001",
+    "type": "gmail-chat",
+    "subject": "Launch.AI Test Event: Project Sync",
+    "body": "Hello team,\n\nWe will hold the Project Sync meeting on Tuesday, April 16, 2026 at 10:30 AM. The meeting will take place in Conference Room B on the 3rd floor. Please prepare a short update on your current tasks.\n\nAgenda:\n1) Status updates (10 minutes)\n2) Risk review (10 minutes)\n3) Next milestones and owners (10 minutes)\n4) Open questions (5 minutes)\n\nIf you cannot attend, email your update by Monday 6:00 PM so it can be included. Please bring any blockers or dependencies that need escalation. We will capture action items and owners at the end of the meeting and send a summary to the team.\n\nAttendees: Alex Kim, Maria Soto, Ivan Petrov.\n\nThanks,\nQA Automation",
+    "question": "When is the Project Sync and where will it take place?",
+    "command": "npx ts-node qa/codex/runner/run-case.ts --case-file qa/codex/cases/gmail-chat/TC-CODEX-001.json"
+  },
+  "email": {
+    "from": "mykola@launchnyc.io",
+    "to": "mykola@launchnyc.io",
+    "messageId": "19d639c073c3a6c9",
+    "threadId": "19d639c073c3a6c9",
+    "sentAt": "2026-04-06T16:24:21.639Z"
+  },
+  "ingest": {
+    "found": false,
+    "attempts": [
+      {
+        "attempt": 1,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:24:21.802Z"
+      },
+      {
+        "attempt": 2,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:24:24.827Z"
+      },
+      {
+        "attempt": 3,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:24:27.850Z"
+      },
+      {
+        "attempt": 4,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:24:30.904Z"
+      },
+      {
+        "attempt": 5,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:24:33.967Z"
+      },
+      {
+        "attempt": 6,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:24:37.007Z"
+      },
+      {
+        "attempt": 7,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:24:40.056Z"
+      },
+      {
+        "attempt": 8,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:24:43.163Z"
+      },
+      {
+        "attempt": 9,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:24:46.204Z"
+      },
+      {
+        "attempt": 10,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:24:49.224Z"
+      },
+      {
+        "attempt": 11,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:24:52.283Z"
+      },
+      {
+        "attempt": 12,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:24:55.312Z"
+      },
+      {
+        "attempt": 13,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:24:58.413Z"
+      },
+      {
+        "attempt": 14,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:25:01.434Z"
+      },
+      {
+        "attempt": 15,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:25:04.518Z"
+      },
+      {
+        "attempt": 16,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:25:07.614Z"
+      },
+      {
+        "attempt": 17,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:25:10.645Z"
+      },
+      {
+        "attempt": 18,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:25:13.675Z"
+      },
+      {
+        "attempt": 19,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:25:16.815Z"
+      },
+      {
+        "attempt": 20,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:25:19.842Z"
+      },
+      {
+        "attempt": 21,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:25:22.866Z"
+      },
+      {
+        "attempt": 22,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:25:25.908Z"
+      },
+      {
+        "attempt": 23,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:25:28.929Z"
+      },
+      {
+        "attempt": 24,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:25:31.961Z"
+      },
+      {
+        "attempt": 25,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:25:35.081Z"
+      },
+      {
+        "attempt": 26,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:25:38.100Z"
+      },
+      {
+        "attempt": 27,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:25:41.121Z"
+      },
+      {
+        "attempt": 28,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:25:44.193Z"
+      },
+      {
+        "attempt": 29,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:25:47.220Z"
+      },
+      {
+        "attempt": 30,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:25:50.250Z"
+      },
+      {
+        "attempt": 31,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:25:53.302Z"
+      },
+      {
+        "attempt": 32,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:25:56.475Z"
+      },
+      {
+        "attempt": 33,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:25:59.556Z"
+      },
+      {
+        "attempt": 34,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:26:02.668Z"
+      },
+      {
+        "attempt": 35,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:26:05.863Z"
+      },
+      {
+        "attempt": 36,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:26:08.922Z"
+      },
+      {
+        "attempt": 37,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:26:11.955Z"
+      },
+      {
+        "attempt": 38,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:26:15.467Z"
+      },
+      {
+        "attempt": 39,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:26:18.518Z"
+      },
+      {
+        "attempt": 40,
+        "found": false,
+        "rowCount": 0,
+        "at": "2026-04-06T16:26:21.538Z"
+      }
+    ],
+    "matchedRowsCount": 0
+  },
+  "chat": {
+    "apiBaseUrl": "https://localhost:5199",
+    "payload": null,
+    "status": null,
+    "errors": [],
+    "answer": null,
+    "citations": null,
+    "answerLog": null
+  },
+  "timestamps": {
+    "startedAt": "2026-04-06T16:24:21.058Z",
+    "finishedAt": "2026-04-06T16:26:21.538Z"
+  },
+  "failureReason": "Ingest wait timed out: raw_item not found for sent message."
+}

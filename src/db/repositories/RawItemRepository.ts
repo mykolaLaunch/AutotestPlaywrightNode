@@ -139,6 +139,27 @@ export class RawItemRepository extends DBTool {
   }
 
   /**
+   * Returns the latest row by updated_time for a specific source and external_id.
+   */
+  public async getLatestBySourceAndExternalIdByUpdatedTime(
+    source: string,
+    externalId: string
+  ): Promise<RawItemRow | null> {
+    const safeSource = source.replace(/'/g, "''");
+    const safeExternalId = externalId.replace(/'/g, "''");
+    const sql = `
+      SELECT ri.*
+      FROM raw.raw_item AS ri
+      WHERE source = '${safeSource}'
+        AND external_id = '${safeExternalId}'
+      ORDER BY ri.updated_utc DESC NULLS LAST
+      LIMIT 1
+    `;
+    const rows = await this.selectAction<RawItemRow>(sql);
+    return rows[0] ?? null;
+  }
+
+  /**
    * Returns rows from raw.raw_item for a specific source and external_thread,
    * ordered by created_utc descending.
    */

@@ -450,7 +450,7 @@ test.describe('Gmail tests', { tag: ['@gmail', '@regression'] }, () => {
   );
 
   test(
-    'Gmail catch new message',
+    'Gmail catch new message(postgres)',
     { tag: ['@gmail', '@dynamic', '@new-object-load'] },
     async () => {
       console.info('--- Gmail dynamic ingestion test start');
